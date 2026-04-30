@@ -5,6 +5,8 @@ if (process.env.NODE_ENV !== 'production') {
   dotenv.config({ path: '.env' });
 }
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST,
@@ -15,4 +17,5 @@ export const AppDataSource = new DataSource({
   entities: [__dirname + '/../../**/*.entity.{ts,js}'],
   migrations: [__dirname + '/migrations/*.{ts,js}'],
   synchronize: false,
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
 });
