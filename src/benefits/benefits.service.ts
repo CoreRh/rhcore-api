@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -80,7 +79,11 @@ export class BenefitsService {
 
   async findByEmployee(funcionarioId: string): Promise<Benefit[]> {
     return this.benefitRepository.find({
-      where: { FUNCIONARIO: { ID: funcionarioId } },
+      where: {
+        FUNCIONARIO: {
+          ID: funcionarioId,
+        },
+      },
       relations: ['FUNCIONARIO'],
     });
   }
