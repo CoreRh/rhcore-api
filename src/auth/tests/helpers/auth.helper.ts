@@ -14,17 +14,20 @@ interface AuthResponse {
 }
 
 export class AuthHelper {
+  private static readonly username = 'admin';
   private static accessToken: string;
   private static refreshToken: string;
 
   static async setup(dataSource: DataSource) {
     const repo = dataSource.getRepository(User);
 
-    const exists = await repo.findOne({ where: { NOME_USUARIO: 'admin' } });
+    const exists = await repo.findOne({
+      where: { NOME_USUARIO: this.username },
+    });
 
     if (!exists) {
       const user = repo.create({
-        NOME_USUARIO: 'admin',
+        NOME_USUARIO: this.username,
         SENHA: await bcrypt.hash('admin123', 10),
         EMAIL: 'admin@admin.com.br',
         CRIADO_POR: 'test',
@@ -42,7 +45,7 @@ export class AuthHelper {
     const response = await fetch('http://localhost:3001/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'admin', password: 'admin123' }),
+      body: JSON.stringify({ username: this.username, password: 'admin123' }),
     });
 
     if (!response.ok)
@@ -69,5 +72,9 @@ export class AuthHelper {
   static getRefreshToken() {
     if (!this.refreshToken) throw new Error('Refresh token não disponível');
     return this.refreshToken;
+  }
+
+  static getUsername() {
+    return this.username;
   }
 }

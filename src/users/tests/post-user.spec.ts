@@ -77,6 +77,23 @@ describe('POST /users', () => {
     expect(body.succeeded).toBe(false);
   });
 
+  it('deve retornar 409 quando o e-mail já está em uso', async () => {
+    await createUser({
+      NOME_USUARIO: 'primeiro-usuario',
+      EMAIL: 'duplicado@email.com.br',
+      SENHA: 'senha123',
+    });
+
+    const { status, body } = await createUser({
+      NOME_USUARIO: 'segundo-usuario',
+      EMAIL: 'duplicado@email.com.br',
+      SENHA: 'senha123',
+    });
+
+    expect(status).toBe(409);
+    expect(body.succeeded).toBe(false);
+  });
+
   it('deve retornar 401 quando não autenticado', async () => {
     const { status, body } = await createUser(
       {

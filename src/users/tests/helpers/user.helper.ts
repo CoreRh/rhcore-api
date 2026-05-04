@@ -81,5 +81,10 @@ export async function cleanupAll() {
     throw new Error(
       'DataSource não inicializado. Rode initTestDataSource antes',
     );
-  await dataSource.getRepository(User).createQueryBuilder().delete().execute();
+  await dataSource
+    .getRepository(User)
+    .createQueryBuilder()
+    .delete()
+    .where('NOME_USUARIO != :name', { name: AuthHelper.getUsername() })
+    .execute();
 }

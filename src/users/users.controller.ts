@@ -22,12 +22,16 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto, UserListResponseDto } from './dto/user-response.dto';
 import {
   BadRequestResponseDto,
+  ConflictResponseDto,
   NotFoundResponseDto,
   UnauthorizedResponseDto,
 } from 'src/common/dto/error-response.dto';
 import { SuccessMessageResponseDto } from 'src/common/dto/base-response.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import { UserRole } from 'src/common/enums/user-role.enum';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @ApiTags('Usuários')
 @ApiBearerAuth('JWT-auth')
@@ -37,6 +41,8 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Criar usuário',
     description: 'Endpoint responsável por criar um novo usuário',
@@ -55,6 +61,11 @@ export class UsersController {
     status: 401,
     description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
     type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Já existe um usuário com esse e-mail.',
+    type: ConflictResponseDto,
   })
   async create(
     @Body() dto: CreateUserDto,
@@ -129,6 +140,8 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Atualizar usuário',
     description: 'Endpoint responsável por atualizar os dados de um usuário',
@@ -173,6 +186,8 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
   @ApiOperation({
     summary: 'Remover usuário',
     description: 'Endpoint responsável por remover um usuário',

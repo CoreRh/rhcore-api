@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BaseSuccessResponseDto } from 'src/common/dto/base-response.dto';
+import { UserPermission } from 'src/common/enums/user-permission.enum';
 import { UserRole } from 'src/common/enums/user-role.enum';
 
 export class UserDataDto {
@@ -29,6 +30,13 @@ export class UserDataDto {
     nullable: true,
   })
   FUNCIONARIO_ID: string | null;
+
+  @ApiProperty({
+    example: ['APPROVE_VACATIONS'],
+    enum: UserPermission,
+    isArray: true,
+  })
+  PERMISSIONS: UserPermission[];
 }
 
 export class UserResponseDto extends BaseSuccessResponseDto {

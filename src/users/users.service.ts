@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Employee } from 'src/employees/entities/employee.entity';
+import { EmployeesService } from 'src/employees/employees.service';
 
 @Injectable()
 export class UsersService {
@@ -21,8 +22,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
-    @InjectRepository(Employee)
-    private readonly employeesRepository: Repository<Employee>,
+    private readonly employeesService: EmployeesService,
   ) {}
 
   async create(dto: CreateUserDto, createdBy: string): Promise<User> {
@@ -66,12 +66,38 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+    return this.usersRepository.find({
+      select: [
+        'ID',
+        'NOME_USUARIO',
+        'EMAIL',
+        'STATUS',
+        'ROLE',
+        'PERMISSIONS',
+        'FUNCIONARIO_ID',
+        'CRIADO_POR',
+        'CRIADO_EM',
+        'ATUALIZADO_POR',
+      ],
+    });
   }
 
   async findOne(id: string): Promise<User> {
-    const user = await this.usersRepository.findOne({ where: { ID: id } });
-
+    const user = await this.usersRepository.findOne({
+      where: { ID: id },
+      select: [
+        'ID',
+        'NOME_USUARIO',
+        'EMAIL',
+        'STATUS',
+        'ROLE',
+        'PERMISSIONS',
+        'FUNCIONARIO_ID',
+        'CRIADO_POR',
+        'CRIADO_EM',
+        'ATUALIZADO_POR',
+      ],
+    });
     if (!user) {
       this.logger.warn(`Usuário ${id} não encontrado`);
       throw new NotFoundException(`Usuário com ID ${id} não encontrado.`);
@@ -91,11 +117,12 @@ export class UsersService {
       await this.findEmployeeOrFail(dto.FUNCIONARIO_ID);
     }
 
-    if (dto.SENHA) {
-      dto.SENHA = await bcrypt.hash(dto.SENHA, 10);
+    const updateData = { ...dto };
+    if (updateData.SENHA) {
+      updateData.SENHA = await bcrypt.hash(updateData.SENHA, 10);
     }
 
-    Object.assign(user, dto);
+    Object.assign(user, updateData);
 
     if (updatedBy) {
       user.ATUALIZADO_POR = updatedBy;
@@ -109,7 +136,8 @@ export class UsersService {
   async remove(id: string, deletedBy?: string): Promise<void> {
     const user = await this.findOne(id);
 
-    await this.usersRepository.remove(user);
+    user.EXCLUIDO_POR = deletedBy ?? 'sistema';
+    await this.usersRepository.softRemove(user);
     this.logger.log(`Usuário ${id} removido por ${deletedBy ?? 'sistema'}`);
   }
 
@@ -181,18 +209,7 @@ export class UsersService {
     });
   }
 
-  private async findEmployeeOrFail(employeeId: string): Promise<Employee> {
-    const employee = await this.employeesRepository.findOne({
-      where: { ID: employeeId },
-    });
-
-    if (!employee) {
-      this.logger.warn(`Funcionário ${employeeId} não encontrado`);
-      throw new NotFoundException(
-        `Funcionário com ID ${employeeId} não encontrado.`,
-      );
-    }
-
-    return employee;
+  private findEmployeeOrFail(employeeId: string): Promise<Employee> {
+    return this.employeesService.findOne(employeeId);
   }
 }
