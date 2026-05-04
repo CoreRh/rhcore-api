@@ -17,6 +17,7 @@ export interface BenefitData {
   TIPO: BeneficioTipoEnum;
   DESCRICAO: string | null;
   VALOR: number;
+  METADADOS: Record<string, unknown> | null;
   DATA_INICIO: string;
   DATA_FIM: string | null;
   STATUS_BENEFICIO: BeneficioStatusEnum;
@@ -57,6 +58,7 @@ export async function createBenefit(
     FUNCIONARIO_ID: string;
     TIPO: BeneficioTipoEnum;
     VALOR: number;
+    METADADOS: Record<string, unknown> | null;
     DATA_INICIO: string;
     DATA_FIM: string;
     DESCRICAO: string;
@@ -67,8 +69,12 @@ export async function createBenefit(
   const payload = {
     FUNCIONARIO_ID: overrides?.FUNCIONARIO_ID ?? defaultEmployeeId,
     TIPO: overrides?.TIPO ?? BeneficioTipoEnum.VALE_REFEICAO,
-    VALOR: overrides?.VALOR ?? 500.0,
     DATA_INICIO: overrides?.DATA_INICIO ?? '2025-01-01',
+    METADADOS:
+      overrides?.METADADOS !== undefined
+        ? overrides.METADADOS
+        : { VALOR_DIARIO: 25, DIAS_UTEIS: 20 },
+    ...(overrides?.VALOR !== undefined && { VALOR: overrides.VALOR }),
     ...(overrides?.DATA_FIM && { DATA_FIM: overrides.DATA_FIM }),
     ...(overrides?.DESCRICAO && { DESCRICAO: overrides.DESCRICAO }),
     ...(overrides?.OBSERVACAO && { OBSERVACAO: overrides.OBSERVACAO }),

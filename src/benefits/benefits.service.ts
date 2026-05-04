@@ -14,6 +14,12 @@ import { AuthUser } from 'src/auth/types/auth-user.type';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { UserPermission } from 'src/common/enums/user-permission.enum';
 import { UpdateBenefitDto } from './dto/update-benefit.dto';
+import { BeneficioTipoEnum } from './enums/beneficio-tipo.enum';
+import {
+  ValeRefeicaoMetadadosDto,
+  ValeTransporteMetadadosDto,
+} from './dto/benefit-metadata.dto';
+import { BenefitMetadata } from './types/benefit-metadata.types';
 
 @Injectable()
 export class BenefitsService {
@@ -25,6 +31,29 @@ export class BenefitsService {
     @InjectRepository(Employee)
     private readonly employeeRepository: Repository<Employee>,
   ) {}
+
+  private calculateValue(
+    tipo: BeneficioTipoEnum,
+    metadados: unknown,
+    valorInformado?: number,
+  ): number {
+    if (tipo === BeneficioTipoEnum.VALE_TRANSPORTE) {
+      const m = metadados as ValeTransporteMetadadosDto;
+      return Number(
+        (m.VALOR_PASSAGEM * m.QUANTIDADE_DIARIA * m.DIAS_UTEIS).toFixed(2),
+      );
+    }
+    if (tipo === BeneficioTipoEnum.VALE_REFEICAO) {
+      const m = metadados as ValeRefeicaoMetadadosDto;
+      return Number((m.VALOR_DIARIO * m.DIAS_UTEIS).toFixed(2));
+    }
+    if (!valorInformado) {
+      throw new BadRequestException(
+        'O valor é obrigatório para este tipo de benefício',
+      );
+    }
+    return valorInformado;
+  }
 
   async create(dto: CreateBenefitDto, createdBy: string): Promise<Benefit> {
     const employee = await this.employeeRepository.findOne({
@@ -43,11 +72,14 @@ export class BenefitsService {
       );
     }
 
+    const valor = this.calculateValue(dto.TIPO, dto.METADADOS, dto.VALOR);
+
     const benefit = this.benefitRepository.create({
       FUNCIONARIO: { ID: dto.FUNCIONARIO_ID } as Employee,
       TIPO: dto.TIPO,
       DESCRICAO: dto.DESCRICAO ?? null,
-      VALOR: dto.VALOR,
+      VALOR: valor,
+      METADADOS: (dto.METADADOS as BenefitMetadata) ?? null,
       DATA_INICIO: new Date(dto.DATA_INICIO),
       DATA_FIM: dto.DATA_FIM ? new Date(dto.DATA_FIM) : null,
       OBSERVACAO: dto.OBSERVACAO ?? null,
@@ -109,6 +141,17 @@ export class BenefitsService {
   ): Promise<Benefit> {
     const benefit = await this.findOne(id);
 
+    const efetiveType = dto.TIPO ?? benefit.TIPO;
+
+    let efetiveValue = dto.VALOR ?? benefit.VALOR;
+    if (dto.METADADOS !== undefined) {
+      efetiveValue = this.calculateValue(
+        efetiveType,
+        dto.METADADOS ?? benefit.METADADOS,
+        dto.VALOR,
+      );
+    }
+
     Object.assign(benefit, {
       ...(dto.FUNCIONARIO_ID !== undefined && {
         FUNCIONARIO: { ID: dto.FUNCIONARIO_ID } as Employee,
@@ -116,7 +159,8 @@ export class BenefitsService {
 
       ...(dto.TIPO !== undefined && { TIPO: dto.TIPO }),
       ...(dto.DESCRICAO !== undefined && { DESCRICAO: dto.DESCRICAO }),
-      ...(dto.VALOR !== undefined && { VALOR: dto.VALOR }),
+      VALOR: efetiveValue,
+      ...(dto.METADADOS !== undefined && { METADADOS: dto.METADADOS ?? null }),
       ...(dto.DATA_INICIO !== undefined && {
         DATA_INICIO: new Date(dto.DATA_INICIO),
       }),
