@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BeneficioTipoEnum } from '../enums/beneficio-tipo.enum';
 import { BeneficioStatusEnum } from '../enums/beneficio-status.enum';
 import { BaseSuccessResponseDto } from 'src/common/dto/base-response.dto';
+import type { BenefitMetadata } from '../types/benefit-metadata.types';
 
 export class BenefitEmployeeDto {
   @ApiProperty({ example: 'a3bb189e-8bf9-3888-9912-ace4e6543002' })
@@ -32,6 +33,16 @@ export class BenefitDataDto {
 
   @ApiProperty({ example: 500.0 })
   VALOR: number;
+
+  @ApiPropertyOptional({
+    oneOf: [
+      { $ref: '#/components/schemas/ValeTransporteMetadadosDto' },
+      { $ref: '#/components/schemas/ValeRefeicaoMetadadosDto' },
+      { $ref: '#/components/schemas/PlanoSaudeMetadadosDto' },
+    ],
+    nullable: true,
+  })
+  METADADOS: BenefitMetadata;
 
   @ApiProperty({ example: '2025-12-31' })
   DATA_INICIO: Date;

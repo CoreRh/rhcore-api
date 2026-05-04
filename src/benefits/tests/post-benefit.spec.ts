@@ -6,6 +6,7 @@ import {
   setupDefaultEmployee,
 } from './helpers/benefit.helper';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
+import { BeneficioTipoEnum } from '../enums/beneficio-tipo.enum';
 
 describe('POST /benefits', () => {
   beforeAll(async () => {
@@ -61,7 +62,11 @@ describe('POST /benefits', () => {
   });
 
   it('deve retornar 400 quando VALOR não é positivo', async () => {
-    const { status, body } = await createBenefit({ VALOR: -100 });
+    const { status, body } = await createBenefit({
+      TIPO: BeneficioTipoEnum.OUTROS,
+      VALOR: -100,
+      METADADOS: null,
+    });
 
     expect(status).toBe(400);
     expect(body.succeeded).toBe(false);
@@ -72,5 +77,16 @@ describe('POST /benefits', () => {
 
     expect(status).toBe(401);
     expect(body.succeeded).toBe(false);
+  });
+
+  it('deve criar VALE_TRANSPORTE e calcular VALOR automaticamente (201)', async () => {
+    const { status, body } = await createBenefit({
+      TIPO: BeneficioTipoEnum.VALE_TRANSPORTE,
+      METADADOS: { VALOR_PASSAGEM: 5.5, QUANTIDADE_DIARIA: 2, DIAS_UTEIS: 22 },
+    });
+
+    expect(status).toBe(201);
+    expect(body.data?.VALOR).toBe(242);
+    expect(body.data?.METADADOS).toMatchObject({ VALOR_PASSAGEM: 5.5 });
   });
 });
