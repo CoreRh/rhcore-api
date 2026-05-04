@@ -3,6 +3,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BeneficioTipoEnum } from '../enums/beneficio-tipo.enum';
 import { BeneficioStatusEnum } from '../enums/beneficio-status.enum';
 import { BaseEntity } from 'src/common/entities/base.entity';
+import { BenefitMetadata } from '../types/benefit-metadata.types';
 
 @Entity('BENEFICIOS')
 export class Benefit extends BaseEntity {
@@ -32,6 +33,9 @@ export class Benefit extends BaseEntity {
     scale: 2,
   })
   VALOR: number;
+
+  @Column({ name: 'METADADOS', type: 'jsonb', nullable: true })
+  METADADOS: BenefitMetadata | null;
 
   @Column({
     name: 'DATA_INICIO',
