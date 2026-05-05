@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { RequestsService } from './requests.service';
 import { CreateRequestDto } from './dto/create-request.dto';
@@ -31,6 +32,9 @@ import {
 } from 'src/common/dto/error-response.dto';
 import type { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 import { SuccessMessageResponseDto } from 'src/common/dto/base-response.dto';
+import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
+import { RequirePermissions } from 'src/auth/decorators/permissions.decorator';
+import { UserPermission } from 'src/common/enums/user-permission.enum';
 
 @ApiTags('Solicitações')
 @ApiBearerAuth('JWT-auth')
@@ -67,7 +71,7 @@ export class RequestsController {
     return {
       succeeded: true,
       data: requests,
-      message: 'Solicitações listadas com sucesso',
+      message: 'Solicitações listadas com sucesso.',
     };
   }
 
@@ -81,7 +85,9 @@ export class RequestsController {
   @ApiResponse({ status: 200, type: RequestResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
-  async findOne(@Param('id') id: string): Promise<RequestResponseDto> {
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<RequestResponseDto> {
     const request = await this.requestsService.findOne(id);
     return {
       succeeded: true,
@@ -102,15 +108,11 @@ export class RequestsController {
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateRequestDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<RequestResponseDto> {
-    const request = await this.requestsService.update(
-      id,
-      dto,
-      req.user.username,
-    );
+    const request = await this.requestsService.update(id, dto, req.user);
     return {
       succeeded: true,
       data: request,
@@ -119,6 +121,8 @@ export class RequestsController {
   }
 
   @Patch(':id/approve')
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.APPROVE_REQUESTS)
   @ApiOperation({ summary: 'Aprovar solicitação' })
   @ApiParam({
     name: 'id',
@@ -129,7 +133,7 @@ export class RequestsController {
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
   async approve(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<RequestResponseDto> {
     const request = await this.requestsService.approve(
@@ -155,10 +159,10 @@ export class RequestsController {
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
   async remove(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<SuccessMessageResponseDto> {
-    await this.requestsService.remove(id, req.user.username);
+    await this.requestsService.remove(id, req.user);
     return {
       succeeded: true,
       message: 'Solicitação removida com sucesso.',

@@ -1,13 +1,12 @@
 import { AppDataSource } from 'src/config/database/data-source';
 import {
+  BASE_URL,
   cleanupAll,
   createRequest,
   initTestDataSource,
   setupDefaultEmployee,
 } from './helpers/request.helper';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
-
-const BASE_URL = 'http://localhost:3001';
 
 describe('PATCH /requests/:id', () => {
   beforeAll(async () => {
@@ -75,6 +74,49 @@ describe('PATCH /requests/:id', () => {
 
     const body = await response.json();
     expect(response.status).toBe(401);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 403 quando funcionário tenta alterar solicitação de outro', async () => {
+    const created = await createRequest();
+    const id = created.body.data!.ID;
+
+    await fetch(`${BASE_URL}/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...AuthHelper.getAuthHeader(),
+      },
+      body: JSON.stringify({
+        NOME_USUARIO: 'outro-funcionario',
+        EMAIL: 'outro@email.com.br',
+        SENHA: 'senha123',
+        ROLE: 'EMPLOYEE',
+      }),
+    });
+
+    const loginRes = await fetch(`${BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'outro-funcionario',
+        password: 'senha123',
+      }),
+    });
+    const loginBody = await loginRes.json();
+    const otherToken = loginBody.data.access_token;
+
+    const response = await fetch(`${BASE_URL}/requests/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${otherToken}`,
+      },
+      body: JSON.stringify({ DESCRICAO: 'Tentativa indevida' }),
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(403);
     expect(body.succeeded).toBe(false);
   });
 });

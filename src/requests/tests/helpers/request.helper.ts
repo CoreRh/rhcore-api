@@ -1,9 +1,10 @@
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
 import { ApiResponse } from 'src/common/tests/helpers/api-response.helper';
+import { RequestStatusEnum } from 'src/requests/enums/request-status.enum';
 import { RequestTypeEnum } from 'src/requests/enums/request-type.enum';
 import { DataSource } from 'typeorm';
 
-const BASE_URL = 'http://localhost:3001';
+export const BASE_URL = 'http://localhost:3001';
 const REQUEST_ENDPOINT = '/requests';
 const EMPLOYEES_ENDPOINT = '/employees';
 
@@ -21,6 +22,7 @@ export interface RequestData {
   APROVADO_POR: { ID: string; NOME_USUARIO: string; EMAIL: string } | null;
   CRIADO_POR: string;
   CRIADO_EM: string;
+  SITUACAO: RequestStatusEnum;
 }
 
 export function initTestDataSource(ds: DataSource) {
@@ -86,7 +88,7 @@ export async function createRequest(
   };
 }
 
-export async function getAllRequests(): Promise<{
+export async function getAllRequests(authenticated = true): Promise<{
   status: number;
   ok: boolean;
   body: ApiResponse<RequestData[]>;
@@ -95,7 +97,7 @@ export async function getAllRequests(): Promise<{
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      ...AuthHelper.getAuthHeader(),
+      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
     },
   });
 

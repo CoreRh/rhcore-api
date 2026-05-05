@@ -28,4 +28,37 @@ describe('POST /requests', () => {
     expect(body.data?.TIPO).toBe('DOCUMENTO');
     expect(body.message).toBe('Solicitação criada com sucesso.');
   });
+
+  it('deve retornar 401 quando não autenticado', async () => {
+    const { status, body } = await createRequest(undefined, false);
+
+    expect(status).toBe(401);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 400 quando FUNCIONARIO_ID está ausente', async () => {
+    const response = await fetch('http://localhost:3001/requests', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...AuthHelper.getAuthHeader(),
+      },
+      body: JSON.stringify({
+        TIPO: 'DOCUMENTO',
+        DESCRICAO: 'Teste',
+        DATA_SOLICITACAO: '2025-07-30',
+      }),
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 400 quando TIPO é inválido', async () => {
+    const { status, body } = await createRequest({ TIPO: 'INVALIDO' as any });
+
+    expect(status).toBe(400);
+    expect(body.succeeded).toBe(false);
+  });
 });
