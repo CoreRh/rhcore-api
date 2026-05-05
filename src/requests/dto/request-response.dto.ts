@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { RequestTypeEnum } from '../enums/request-type.enum';
+import { RequestStatusEnum } from '../enums/request-status.enum';
 import { BaseSuccessResponseDto } from 'src/common/dto/base-response.dto';
 
 export class RequestEmployeeDto {
@@ -48,6 +49,9 @@ export class RequestDataDto {
 
   @ApiPropertyOptional({ type: () => RequestApproverDto })
   APROVADO_POR: RequestApproverDto | null;
+
+  @ApiProperty({ enum: RequestStatusEnum, example: RequestStatusEnum.PENDENTE })
+  SITUACAO: RequestStatusEnum;
 
   @ApiProperty({ example: 'admin' })
   CRIADO_POR: string;
