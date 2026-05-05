@@ -1,6 +1,7 @@
 import { AppDataSource } from '../../config/database/data-source';
 import { AuthHelper } from '../../auth/tests/helpers/auth.helper';
 import {
+  BASE_URL,
   cleanupAll,
   createUser,
   initTestDataSource,
@@ -91,6 +92,30 @@ describe('POST /users', () => {
     });
 
     expect(status).toBe(409);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 403 quando usuário sem permissão tenta criar', async () => {
+    const token = await AuthHelper.createSessionAs(
+      AppDataSource,
+      'employee-post',
+    );
+
+    const response = await fetch(`${BASE_URL}/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        NOME_USUARIO: 'nao-permitido',
+        EMAIL: 'naopermitido@email.com.br',
+        SENHA: 'senha123',
+      }),
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(403);
     expect(body.succeeded).toBe(false);
   });
 
