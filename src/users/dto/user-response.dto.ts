@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BaseSuccessResponseDto } from 'src/common/dto/base-response.dto';
+import { BaseEntityStatusEnum } from 'src/common/enums/base-entity-status.enum';
 import { UserPermission } from 'src/common/enums/user-permission.enum';
 import { UserRole } from 'src/common/enums/user-role.enum';
 
@@ -13,8 +14,11 @@ export class UserDataDto {
   @ApiProperty({ example: 'joao@email.com' })
   EMAIL: string;
 
-  @ApiProperty({ example: 'ATIVO' })
-  STATUS: string;
+  @ApiProperty({ example: 'ATIVO', enum: BaseEntityStatusEnum })
+  STATUS: BaseEntityStatusEnum;
+
+  @ApiPropertyOptional({ example: 'admin', nullable: true })
+  ATUALIZADO_POR: string | null;
 
   @ApiProperty({ example: 'admin' })
   CRIADO_POR: string;

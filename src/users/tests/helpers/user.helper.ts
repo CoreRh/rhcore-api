@@ -3,7 +3,7 @@ import { User } from '../../../users/entities/user.entity';
 import { DataSource } from 'typeorm';
 import type { ApiResponse } from '../../../common/tests/helpers/api-response.helper';
 
-const BASE_URL = 'http://localhost:3001';
+export const BASE_URL = 'http://localhost:3001';
 const USERS_ENDPOINT = '/users';
 
 let dataSource: DataSource;
@@ -13,7 +13,12 @@ export interface UserData {
   NOME_USUARIO: string;
   EMAIL: string;
   STATUS: string;
+  ROLE: string;
+  PERMISSIONS: string[];
+  FUNCIONARIO_ID: string | null;
+  CRIADO_POR: string;
   CRIADO_EM: string;
+  ATUALIZADO_POR: string | null;
 }
 
 export function initTestDataSource(ds: DataSource) {
@@ -43,7 +48,7 @@ export async function createUser(
   return { status: response.status, ok: response.ok, body: data };
 }
 
-export async function getAllUsers(): Promise<{
+export async function getAllUsers(authenticated = true): Promise<{
   status: number;
   ok: boolean;
   body: ApiResponse<UserData[]>;
@@ -52,7 +57,7 @@ export async function getAllUsers(): Promise<{
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      ...AuthHelper.getAuthHeader(),
+      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
     },
   });
 
