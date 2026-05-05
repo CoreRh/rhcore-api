@@ -16,6 +16,9 @@ export class UserDataDto {
   @ApiProperty({ example: 'ATIVO' })
   STATUS: string;
 
+  @ApiPropertyOptional({ example: 'admin', nullable: true })
+  ATUALIZADO_POR: string | null;
+
   @ApiProperty({ example: 'admin' })
   CRIADO_POR: string;
 
