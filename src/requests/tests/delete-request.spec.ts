@@ -69,4 +69,26 @@ describe('DELETE /requests/:id', () => {
     expect(response.status).toBe(401);
     expect(body.succeeded).toBe(false);
   });
+
+  it('deve retornar 403 quando funcionário tenta deletar solicitação de outro', async () => {
+    const created = await createRequest();
+    const id = created.body.data!.ID;
+
+    const token = await AuthHelper.createSessionAs(
+      AppDataSource,
+      'outro-funcionario',
+    );
+
+    const response = await fetch(`${BASE_URL}/requests/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(403);
+    expect(body.succeeded).toBe(false);
+  });
 });

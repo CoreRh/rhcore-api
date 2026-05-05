@@ -18,6 +18,35 @@ export class AuthHelper {
   private static accessToken: string;
   private static refreshToken: string;
 
+  static async createSessionAs(
+    dataSource: DataSource,
+    username: string,
+    role: UserRole = UserRole.EMPLOYEE,
+  ): Promise<string> {
+    const repo = dataSource.getRepository(User);
+    const exists = await repo.findOne({ where: { NOME_USUARIO: username } });
+
+    if (!exists) {
+      const user = repo.create({
+        NOME_USUARIO: username,
+        SENHA: await bcrypt.hash('senha123', 10),
+        EMAIL: `${username}@test.com.br`,
+        CRIADO_POR: 'test',
+        ROLE: role,
+      });
+      await repo.save(user);
+    }
+
+    const response = await fetch('http://localhost:3001/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password: 'senha123' }),
+    });
+
+    const data = (await response.json()) as AuthResponse;
+    return data.data.access_token;
+  }
+
   static async setup(dataSource: DataSource) {
     const repo = dataSource.getRepository(User);
 
