@@ -27,6 +27,7 @@ import {
 } from './dto/request-response.dto';
 import {
   BadRequestResponseDto,
+  ForbiddenResponseDto,
   NotFoundResponseDto,
   UnauthorizedResponseDto,
 } from 'src/common/dto/error-response.dto';
@@ -106,6 +107,7 @@ export class RequestsController {
   @ApiResponse({ status: 200, type: RequestResponseDto })
   @ApiResponse({ status: 400, type: BadRequestResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
+  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -131,6 +133,7 @@ export class RequestsController {
   })
   @ApiResponse({ status: 200, type: RequestResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
+  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
   async approve(
     @Param('id', ParseUUIDPipe) id: string,
@@ -157,6 +160,7 @@ export class RequestsController {
   })
   @ApiResponse({ status: 200, type: SuccessMessageResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
+  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
