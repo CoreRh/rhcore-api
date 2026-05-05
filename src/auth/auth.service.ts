@@ -125,7 +125,7 @@ export class AuthService {
       );
     }
 
-    await this.usersService.update(user.ID, { SENHA: newPassword });
+    await this.usersService.update(user.ID, { SENHA: newPassword }, 'sistema');
     await this.usersService.clearResetToken(user.ID);
 
     return {
