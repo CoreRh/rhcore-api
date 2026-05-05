@@ -37,21 +37,11 @@ describe('POST /requests', () => {
   });
 
   it('deve retornar 400 quando FUNCIONARIO_ID está ausente', async () => {
-    const response = await fetch('http://localhost:3001/requests', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...AuthHelper.getAuthHeader(),
-      },
-      body: JSON.stringify({
-        TIPO: 'DOCUMENTO',
-        DESCRICAO: 'Teste',
-        DATA_SOLICITACAO: '2025-07-30',
-      }),
+    const { status, body } = await createRequest({
+      FUNCIONARIO_ID: undefined as any,
     });
 
-    const body = await response.json();
-    expect(response.status).toBe(400);
+    expect(status).toBe(400);
     expect(body.succeeded).toBe(false);
   });
 
