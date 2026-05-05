@@ -59,7 +59,9 @@ export class UsersService {
         err instanceof QueryFailedError &&
         (err as QueryFailedError & { code: string }).code === '23505'
       ) {
-        throw new ConflictException('Já existe um usuário com esse e-mail.');
+        throw new ConflictException(
+          'Já existe um usuário com esse e-mail ou nome de usuário.',
+        );
       }
       throw err;
     }
@@ -109,7 +111,7 @@ export class UsersService {
   async update(
     id: string,
     dto: UpdateUserDto,
-    updatedBy?: string,
+    updatedBy: string,
   ): Promise<User> {
     const user = await this.findOne(id);
 
@@ -124,21 +126,32 @@ export class UsersService {
 
     Object.assign(user, updateData);
 
-    if (updatedBy) {
-      user.ATUALIZADO_POR = updatedBy;
+    user.ATUALIZADO_POR = updatedBy;
+
+    try {
+      await this.usersRepository.save(user);
+    } catch (err) {
+      if (
+        err instanceof QueryFailedError &&
+        (err as QueryFailedError & { code: string }).code === '23505'
+      ) {
+        throw new ConflictException(
+          'Já existe um usuário com esse e-mail ou funcionário vinculado.',
+        );
+      }
+      throw err;
     }
 
-    const saved = await this.usersRepository.save(user);
-    this.logger.log(`Usuário ${id} atualizado por ${updatedBy ?? 'sistema'}`);
-    return saved;
+    this.logger.log(`Usuário ${id} atualizado por ${updatedBy}`);
+    return this.findOne(id);
   }
 
-  async remove(id: string, deletedBy?: string): Promise<void> {
+  async remove(id: string, deletedBy: string): Promise<void> {
     const user = await this.findOne(id);
 
-    user.EXCLUIDO_POR = deletedBy ?? 'sistema';
+    user.EXCLUIDO_POR = deletedBy;
     await this.usersRepository.softRemove(user);
-    this.logger.log(`Usuário ${id} removido por ${deletedBy ?? 'sistema'}`);
+    this.logger.log(`Usuário ${id} removido por ${deletedBy}`);
   }
 
   async validateCredentials(username: string, password: string): Promise<User> {

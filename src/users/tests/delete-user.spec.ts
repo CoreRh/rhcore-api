@@ -1,12 +1,11 @@
 import { AppDataSource } from '../../config/database/data-source';
 import {
+  BASE_URL,
   cleanupAll,
   createUser,
   initTestDataSource,
 } from './helpers/user.helper';
 import { AuthHelper } from '../../auth/tests/helpers/auth.helper';
-
-const BASE_URL = 'http://localhost:3001';
 
 describe('DELETE /users/:id', () => {
   beforeAll(async () => {
@@ -57,6 +56,32 @@ describe('DELETE /users/:id', () => {
 
     const body = await response.json();
     expect(response.status).toBe(404);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 403 quando usuário sem permissão tenta remover', async () => {
+    const created = await createUser({
+      NOME_USUARIO: 'delete-403',
+      EMAIL: 'delete403@email.com.br',
+      SENHA: 'senha123',
+    });
+    const userId = created.body.data!.ID;
+
+    const token = await AuthHelper.createSessionAs(
+      AppDataSource,
+      'employee-delete',
+    );
+
+    const response = await fetch(`${BASE_URL}/users/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(403);
     expect(body.succeeded).toBe(false);
   });
 

@@ -1,12 +1,11 @@
 import { AppDataSource } from 'src/config/database/data-source';
 import {
+  BASE_URL,
   cleanupAll,
   createUser,
   initTestDataSource,
 } from './helpers/user.helper';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
-
-const BASE_URL = 'http://localhost:3001';
 
 describe('PATCH /users/:id', () => {
   beforeAll(async () => {
@@ -94,12 +93,42 @@ describe('PATCH /users/:id', () => {
     expect(body.succeeded).toBe(false);
   });
 
-  it('deve retornar 401 quando não autenticado', async () => {
-    const response = await fetch(`${BASE_URL}/users/0000-00000`, {
-      method: 'PATCH',
-      headers: { 'Content-type': 'application/json' },
-      body: JSON.stringify({ NOME_USUARIO: 'qualquer' }),
+  it('deve retornar 403 quando usuário sem permissão tenta atualizar', async () => {
+    const created = await createUser({
+      NOME_USUARIO: 'patch-403',
+      EMAIL: 'patch403@email.com.br',
+      SENHA: 'senha123',
     });
+    const userId = created.body.data!.ID;
+
+    const token = await AuthHelper.createSessionAs(
+      AppDataSource,
+      'employee-patch',
+    );
+
+    const response = await fetch(`${BASE_URL}/users/${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ NOME_USUARIO: 'tentativa' }),
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(403);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 401 quando não autenticado', async () => {
+    const response = await fetch(
+      `${BASE_URL}/users/00000000-0000-0000-0000-000000000000`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-type': 'application/json' },
+        body: JSON.stringify({ NOME_USUARIO: 'qualquer' }),
+      },
+    );
 
     const body = await response.json();
     expect(response.status).toBe(401);
