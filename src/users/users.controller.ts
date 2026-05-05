@@ -69,6 +69,11 @@ export class UsersController {
     description: 'Já existe um usuário com esse e-mail.',
     type: ConflictResponseDto,
   })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para realizar esta ação.',
+    type: ForbiddenResponseDto,
+  })
   async create(
     @Body() dto: CreateUserDto,
     @Req() req: AuthenticatedRequest,
