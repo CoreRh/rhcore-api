@@ -1,4 +1,11 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { RequestStatusEnum } from './enums/request-status.enum';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -69,9 +76,15 @@ export class RequestsService {
   async update(
     id: string,
     dto: UpdateRequestDto,
-    updateBy: string,
+    user: AuthUser,
   ): Promise<Request> {
     const request = await this.findOne(id);
+
+    if (!this.canModify(request, user)) {
+      throw new ForbiddenException(
+        'Sem permissão para modificar esta solicitação',
+      );
+    }
 
     Object.assign(request, {
       ...(dto.TIPO !== undefined && { TIPO: dto.TIPO }),
@@ -80,12 +93,11 @@ export class RequestsService {
       ...(dto.DATA_RESPOSTA !== undefined && {
         DATA_RESPOSTA: new Date(dto.DATA_RESPOSTA),
       }),
-      ATUALIZADO_POR: updateBy,
+      ATUALIZADO_POR: user.username,
     });
 
-    await this.requestRepository.save(request);
-    this.logger.log(`Solicitação ${id} atualizada por ${updateBy}`);
-    return this.findOne(id);
+    this.logger.log(`Solicitação ${id} atualizada por ${user.username}`);
+    return this.requestRepository.save(request);
   }
 
   async approve(
@@ -95,7 +107,12 @@ export class RequestsService {
   ): Promise<Request> {
     const request = await this.findOne(id);
 
+    if (request.SITUACAO === RequestStatusEnum.APROVADO) {
+      throw new ConflictException('Esta solicitação já foi aprovada.');
+    }
+
     Object.assign(request, {
+      SITUACAO: RequestStatusEnum.APROVADO,
       APROVADO_POR: { ID: approverId } as User,
       DATA_RESPOSTA: new Date(),
       ATUALIZADO_POR: approvedBy,
@@ -106,9 +123,23 @@ export class RequestsService {
     return this.findOne(id);
   }
 
-  async remove(id: string, deletedBy: string): Promise<void> {
+  async remove(id: string, user: AuthUser): Promise<void> {
     const request = await this.findOne(id);
+
+    if (!this.canModify(request, user)) {
+      throw new ForbiddenException(
+        'Sem permissão para modificar esta solicitação',
+      );
+    }
     await this.requestRepository.remove(request);
-    this.logger.log(`Solicitação ${id} removida por ${deletedBy}`);
+    this.logger.log(`Solicitação ${id} removida por ${user.username}`);
+  }
+
+  private canModify(request: Request, user: AuthUser): boolean {
+    const isOwner = request.FUNCIONARIO?.ID === user.funcionario_id;
+    const canManageAll =
+      user.role !== UserRole.EMPLOYEE ||
+      user.permissions.includes(UserPermission.APPROVE_REQUESTS);
+    return isOwner || canManageAll;
   }
 }
