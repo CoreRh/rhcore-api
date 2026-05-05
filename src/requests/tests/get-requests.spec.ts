@@ -29,17 +29,12 @@ describe('GET /requests', () => {
     expect(body.succeeded).toBe(true);
     expect(Array.isArray(body.data)).toBe(true);
     expect(body.data?.length).toBeGreaterThan(0);
-    expect(body.message).toBe('Solicitações listadas com sucesso');
+    expect(body.message).toBe('Solicitações listadas com sucesso.');
   });
 
   it('deve retornar 401 quando não autenticado', async () => {
-    const response = await fetch('http://localhost:3001/requests', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    const body = await response.json();
+    const response = await getAllRequests(false);
     expect(response.status).toBe(401);
-    expect(body.succeeded).toBe(false);
+    expect(response.body.succeeded).toBe(false);
   });
 });

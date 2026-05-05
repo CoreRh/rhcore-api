@@ -62,6 +62,26 @@ export class NotFoundResponseDto {
   error: object;
 }
 
+export class ForbiddenResponseDto {
+  @ApiProperty({ example: false })
+  succeeded: boolean;
+
+  @ApiProperty({ example: null, nullable: true })
+  data: unknown;
+
+  @ApiProperty({ example: 'Sem permissão para modificar este recurso.' })
+  message: string;
+
+  @ApiProperty({
+    example: {
+      message: 'Sem permissão para modificar este recurso.',
+      error: 'Forbidden',
+      statusCode: 403,
+    },
+  })
+  error: object;
+}
+
 export class ConflictResponseDto {
   @ApiProperty({ example: false })
   succeeded: boolean;

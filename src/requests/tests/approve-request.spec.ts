@@ -30,7 +30,9 @@ describe('PATCH /requests/:id/approve', () => {
     expect(status).toBe(200);
     expect(body.succeeded).toBe(true);
     expect(body.data?.APROVADO_POR).not.toBeNull();
+    expect(body.data?.APROVADO_POR?.NOME_USUARIO).toBeDefined();
     expect(body.data?.DATA_RESPOSTA).not.toBeNull();
+    expect(body.data?.SITUACAO).toBe('APROVADO');
     expect(body.message).toBe('Solicitação aprovada com sucesso.');
   });
 
@@ -50,6 +52,18 @@ describe('PATCH /requests/:id/approve', () => {
     const { status, body } = await approveRequest(id, false);
 
     expect(status).toBe(401);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 409 ao tentar aprovar solicitação já aprovada', async () => {
+    const created = await createRequest();
+    const id = created.body.data!.ID;
+
+    await approveRequest(id);
+
+    const { status, body } = await approveRequest(id);
+
+    expect(status).toBe(409);
     expect(body.succeeded).toBe(false);
   });
 });
