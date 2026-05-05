@@ -80,14 +80,9 @@ export class RequestsService {
   ): Promise<Request> {
     const request = await this.findOne(id);
 
-    const isOwner = request.FUNCIONARIO.ID === user.funcionario_id;
-    const canManageAll =
-      user.role !== UserRole.EMPLOYEE ||
-      user.permissions.includes(UserPermission.APPROVE_REQUESTS);
-
-    if (!isOwner && !canManageAll) {
+    if (!this.canModify(request, user)) {
       throw new ForbiddenException(
-        'Você não tem permissão para atualizar esta solicitação',
+        'Sem permissão para modificar esta solicitação',
       );
     }
 
@@ -123,24 +118,28 @@ export class RequestsService {
       ATUALIZADO_POR: approvedBy,
     });
 
+    await this.requestRepository.save(request);
     this.logger.log(`Solicitação ${id} aprovada por ${approvedBy}`);
-    return this.requestRepository.save(request);
+    return this.findOne(id);
   }
 
   async remove(id: string, user: AuthUser): Promise<void> {
     const request = await this.findOne(id);
 
-    const isOwner = request.FUNCIONARIO?.ID === user.funcionario_id;
-    const canManageAll =
-      user.role !== UserRole.EMPLOYEE ||
-      user.permissions.includes(UserPermission.APPROVE_REQUESTS);
-
-    if (!isOwner && !canManageAll) {
+    if (!this.canModify(request, user)) {
       throw new ForbiddenException(
-        'Sem permissão para alterar esta solicitação',
+        'Sem permissão para modificar esta solicitação',
       );
     }
     await this.requestRepository.remove(request);
     this.logger.log(`Solicitação ${id} removida por ${user.username}`);
+  }
+
+  private canModify(request: Request, user: AuthUser): boolean {
+    const isOwner = request.FUNCIONARIO?.ID === user.funcionario_id;
+    const canManageAll =
+      user.role !== UserRole.EMPLOYEE ||
+      user.permissions.includes(UserPermission.APPROVE_REQUESTS);
+    return isOwner || canManageAll;
   }
 }
