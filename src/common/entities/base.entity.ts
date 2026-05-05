@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { BaseEntityStatusEnum } from '../enums/base-entity-status.enum';
 
 export abstract class BaseEntity {
@@ -34,6 +40,13 @@ export abstract class BaseEntity {
   })
   ATUALIZADO_POR: string | null;
 
+  @UpdateDateColumn({
+    name: 'ATUALIZADO_EM',
+    type: 'timestamp',
+    nullable: true,
+  })
+  ATUALIZADO_EM: Date | null;
+
   @Column({
     name: 'EXCLUIDO_POR',
     type: 'varchar',
@@ -41,4 +54,11 @@ export abstract class BaseEntity {
     nullable: true,
   })
   EXCLUIDO_POR: string | null;
+
+  @DeleteDateColumn({
+    name: 'EXCLUIDO_EM',
+    type: 'timestamp',
+    nullable: true,
+  })
+  EXCLUIDO_EM: Date | null;
 }

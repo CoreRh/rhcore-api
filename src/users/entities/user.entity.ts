@@ -42,7 +42,7 @@ export class User extends BaseEntity {
   ROLE: UserRole;
 
   @Column({
-    name: 'RESET_PASSWORD',
+    name: 'RESET_PASSWORD_TOKEN',
     nullable: true,
     type: 'varchar',
     length: 255,

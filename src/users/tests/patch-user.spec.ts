@@ -45,6 +45,37 @@ describe('PATCH /users/:id', () => {
     expect(body.message).toBe('Usuário atualizado com sucesso.');
   });
 
+  it('deve atualizar a senha e fazer hash corretamente', async () => {
+    const created = await createUser({
+      NOME_USUARIO: 'patch-senha',
+      EMAIL: 'patch-senha@email.com.br',
+      SENHA: 'senha-antiga123',
+    });
+    const userId = created.body.data!.ID;
+
+    const patch = await fetch(`${BASE_URL}/users/${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...AuthHelper.getAuthHeader(),
+      },
+      body: JSON.stringify({ SENHA: 'senha-nova456' }),
+    });
+    expect(patch.status).toBe(200);
+
+    const login = await fetch(`${BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'patch-senha',
+        password: 'senha-nova456',
+      }),
+    });
+    const loginBody = await login.json();
+    expect(login.status).toBe(200);
+    expect(loginBody.data?.access_token).toBeDefined();
+  });
+
   it('deve retornar 404 quando o usuário não existe', async () => {
     const response = await fetch(
       `${BASE_URL}/users/00000000-0000-0000-0000-000000000000`,
