@@ -29,7 +29,7 @@ describe('GET /requests', () => {
     expect(body.succeeded).toBe(true);
     expect(Array.isArray(body.data)).toBe(true);
     expect(body.data?.length).toBeGreaterThan(0);
-    expect(body.message).toBe('Solicitações listadas com sucesso');
+    expect(body.message).toBe('Solicitações listadas com sucesso.');
   });
 
   it('deve retornar 401 quando não autenticado', async () => {
