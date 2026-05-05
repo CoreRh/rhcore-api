@@ -1,5 +1,6 @@
 import { AppDataSource } from 'src/config/database/data-source';
 import {
+  BASE_URL,
   cleanupAll,
   createRequest,
   initTestDataSource,
@@ -37,11 +38,21 @@ describe('POST /requests', () => {
   });
 
   it('deve retornar 400 quando FUNCIONARIO_ID está ausente', async () => {
-    const { status, body } = await createRequest({
-      FUNCIONARIO_ID: undefined as any,
+    const response = await fetch(`${BASE_URL}/requests`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...AuthHelper.getAuthHeader(),
+      },
+      body: JSON.stringify({
+        TIPO: 'DOCUMENTO',
+        DESCRICAO: 'Teste',
+        DATA_SOLICITACAO: '2025-07-30',
+      }),
     });
 
-    expect(status).toBe(400);
+    const body = await response.json();
+    expect(response.status).toBe(400);
     expect(body.succeeded).toBe(false);
   });
 
