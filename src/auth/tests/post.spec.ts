@@ -13,7 +13,7 @@ describe('POST /auth/login', () => {
     await AppDataSource.destroy();
   });
 
-  it('deve autenticar com sucesso (201)', async () => {
+  it('deve autenticar com sucesso (200)', async () => {
     const response = await fetch(`${BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -22,7 +22,7 @@ describe('POST /auth/login', () => {
 
     const body = await response.json();
 
-    expect(response.status).toBe(201);
+    expect(response.status).toBe(200);
     expect(body.succeeded).toBe(true);
     expect(body.data.access_token).toBeDefined();
     expect(body.data.refresh_token).toBeDefined();
