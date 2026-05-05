@@ -9,6 +9,7 @@ export class User extends BaseEntity {
   @Column({
     name: 'NOME_USUARIO',
     length: 255,
+    unique: true,
   })
   NOME_USUARIO: string;
 

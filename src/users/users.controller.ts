@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -23,6 +24,7 @@ import { UserResponseDto, UserListResponseDto } from './dto/user-response.dto';
 import {
   BadRequestResponseDto,
   ConflictResponseDto,
+  ForbiddenResponseDto,
   NotFoundResponseDto,
   UnauthorizedResponseDto,
 } from 'src/common/dto/error-response.dto';
@@ -130,7 +132,9 @@ export class UsersController {
     description: 'Usuário não encontrado.',
     type: NotFoundResponseDto,
   })
-  async findOne(@Param('id') id: string): Promise<UserResponseDto> {
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<UserResponseDto> {
     const user = await this.usersService.findOne(id);
     return {
       succeeded: true,
@@ -168,12 +172,17 @@ export class UsersController {
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para realizar esta ação.',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
     status: 404,
     description: 'Usuário não encontrado.',
     type: NotFoundResponseDto,
   })
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateUserDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<UserResponseDto> {
@@ -209,12 +218,17 @@ export class UsersController {
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para realizar esta ação.',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
     status: 404,
     description: 'Usuário não encontrado.',
     type: NotFoundResponseDto,
   })
   async remove(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<SuccessMessageResponseDto> {
     await this.usersService.remove(id, req.user.username);
