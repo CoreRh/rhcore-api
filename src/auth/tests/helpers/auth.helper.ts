@@ -3,6 +3,8 @@ import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserRole } from 'src/common/enums/user-role.enum';
 
+const TEST_BASE_URL = 'http://localhost:3001';
+
 interface AuthResponse {
   succeeded: boolean;
   data: {
@@ -37,7 +39,7 @@ export class AuthHelper {
       await repo.save(user);
     }
 
-    const response = await fetch('http://localhost:3001/auth/login', {
+    const response = await fetch(`${TEST_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password: 'senha123' }),
@@ -71,7 +73,7 @@ export class AuthHelper {
   }
 
   static async authenticate() {
-    const response = await fetch('http://localhost:3001/auth/login', {
+    const response = await fetch(`${TEST_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: this.username, password: 'admin123' }),

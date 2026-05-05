@@ -81,36 +81,16 @@ describe('PATCH /requests/:id', () => {
     const created = await createRequest();
     const id = created.body.data!.ID;
 
-    await fetch(`${BASE_URL}/users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...AuthHelper.getAuthHeader(),
-      },
-      body: JSON.stringify({
-        NOME_USUARIO: 'outro-funcionario',
-        EMAIL: 'outro@email.com.br',
-        SENHA: 'senha123',
-        ROLE: 'EMPLOYEE',
-      }),
-    });
-
-    const loginRes = await fetch(`${BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: 'outro-funcionario',
-        password: 'senha123',
-      }),
-    });
-    const loginBody = await loginRes.json();
-    const otherToken = loginBody.data.access_token;
+    const token = await AuthHelper.createSessionAs(
+      AppDataSource,
+      'outro-funcionario',
+    );
 
     const response = await fetch(`${BASE_URL}/requests/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${otherToken}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ DESCRICAO: 'Tentativa indevida' }),
     });
