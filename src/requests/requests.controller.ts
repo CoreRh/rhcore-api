@@ -27,6 +27,7 @@ import {
 } from './dto/request-response.dto';
 import {
   BadRequestResponseDto,
+  ConflictResponseDto,
   ForbiddenResponseDto,
   NotFoundResponseDto,
   UnauthorizedResponseDto,
@@ -135,6 +136,7 @@ export class RequestsController {
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   @ApiResponse({ status: 403, type: ForbiddenResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
+  @ApiResponse({ status: 409, type: ConflictResponseDto })
   async approve(
     @Param('id', ParseUUIDPipe) id: string,
     @Req() req: AuthenticatedRequest,
