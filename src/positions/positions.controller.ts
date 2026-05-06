@@ -7,8 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
-  ConflictException,
   Req,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { PositionsService } from './positions.service';
 import { CreatePositionDto } from './dto/create-position.dto';
@@ -27,11 +27,15 @@ import {
 } from './dto/position-response.dto';
 import {
   BadRequestResponseDto,
+  ConflictResponseDto,
   NotFoundResponseDto,
   UnauthorizedResponseDto,
 } from 'src/common/dto/error-response.dto';
 import type { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 import { SuccessMessageResponseDto } from 'src/common/dto/base-response.dto';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { UserRole } from 'src/common/enums/user-role.enum';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @ApiTags('Cargos')
 @ApiBearerAuth('JWT-auth')
@@ -41,11 +45,32 @@ export class PositionsController {
   constructor(private readonly positionsService: PositionsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Criar cargo' })
-  @ApiResponse({ status: 201, type: PositionResponseDto })
-  @ApiResponse({ status: 400, type: BadRequestResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 409, type: ConflictException })
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({
+    summary: 'Criar cargo',
+    description: 'Endpoint responsável por criar um novo cargo',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Cargo criado com sucesso.',
+    type: PositionResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos.',
+    type: BadRequestResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Já exoste um cargo com esse nome.',
+    type: ConflictResponseDto,
+  })
   async create(
     @Body() dto: CreatePositionDto,
     @Req() req: AuthenticatedRequest,
@@ -59,9 +84,20 @@ export class PositionsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar cargos' })
-  @ApiResponse({ status: 200, type: PositionListResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
+  @ApiOperation({
+    summary: 'Listar cargos',
+    description: 'Endpoint responável por listar todos os cargos',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Cargos listados com sucesso.',
+    type: PositionListResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
+    type: UnauthorizedResponseDto,
+  })
   async findAll(): Promise<PositionListResponseDto> {
     const positions = await this.positionsService.findAll();
     return {
@@ -72,16 +108,35 @@ export class PositionsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Buscar cargo por ID' })
+  @ApiOperation({
+    summary: 'Buscar cargo por ID',
+    description:
+      'Endpoint responsável por retornar dados de um cargo específico',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID do cargo a ser buscado',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: PositionResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
-  async findOne(@Param('id') id: string): Promise<PositionResponseDto> {
+  @ApiResponse({
+    status: 200,
+    description: 'Cardo encontrado com sucesso.',
+    type: PositionResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Cargo não encontrado.',
+    type: NotFoundResponseDto,
+  })
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<PositionResponseDto> {
     const position = await this.positionsService.findOne(id);
     return {
       succeeded: true,
@@ -91,18 +146,40 @@ export class PositionsController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar cargo' })
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({
+    summary: 'Atualizar cargo',
+    description: 'Enpoint responsável por atualizar os dados de um cargo',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID do cargo a ser atualizado',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: PositionResponseDto })
-  @ApiResponse({ status: 400, type: BadRequestResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Cargo atualizado com sucesso.',
+    type: PositionResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos.',
+    type: BadRequestResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Cargo não encontrado.',
+    type: NotFoundResponseDto,
+  })
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdatePositionDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<PositionResponseDto> {
@@ -119,23 +196,41 @@ export class PositionsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remover cargo' })
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({
+    summary: 'Remover cargo',
+    description: 'Endpoint responsável por remover um cargo',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID do cargo a ser removido',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: SuccessMessageResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Cargo removido com sucesso.',
+    type: SuccessMessageResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Cargo não encontrado.',
+    type: NotFoundResponseDto,
+  })
   async remove(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<SuccessMessageResponseDto> {
     await this.positionsService.remove(id, req.user.username);
     return {
       succeeded: true,
-      message: 'Cargo removido com sucesso',
+      message: 'Cargo removido com sucesso.',
     };
   }
 }
