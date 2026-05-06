@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 import { Position } from './entities/position.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Department } from 'src/departments/entities/department.entity';
+import { BaseEntityStatusEnum } from 'src/common/enums/base-entity-status.enum';
 
 @Injectable()
 export class PositionsService {
@@ -47,6 +48,7 @@ export class PositionsService {
 
   async findAll(): Promise<Position[]> {
     return this.positionRepository.find({
+      where: { STATUS: BaseEntityStatusEnum.ATIVO },
       relations: ['DEPARTAMENTO'],
     });
   }
@@ -72,13 +74,26 @@ export class PositionsService {
   ): Promise<Position> {
     const position = await this.findOne(id);
 
-    Object.assign(position, {
-      ...dto,
-      DEPARTAMENTO_ID: dto.DEPARTAMENTO_ID
+    if (dto.NOME !== undefined) {
+      const conflict = await this.positionRepository.findOne({
+        where: { NOME: dto.NOME },
+      });
+      if (conflict && conflict.ID !== id) {
+        throw new ConflictException('Já existe um cargo com esse nome');
+      }
+      position.NOME = dto.NOME;
+    }
+    if (dto.DESCRICAO !== undefined) position.DESCRICAO = dto.DESCRICAO ?? null;
+    if (dto.NIVEL !== undefined) position.NIVEL = dto.NIVEL ?? null;
+    if (dto.SALARIO_BASE !== undefined)
+      position.SALARIO_BASE = dto.SALARIO_BASE ?? null;
+    if (dto.STATUS !== undefined) position.STATUS = dto.STATUS;
+    if (dto.DEPARTAMENTO_ID !== undefined) {
+      position.DEPARTAMENTO = dto.DEPARTAMENTO_ID
         ? ({ ID: dto.DEPARTAMENTO_ID } as Department)
-        : position.DEPARTAMENTO,
-      ATUALIZADO_POR: updatedBy,
-    });
+        : (null as unknown as Department);
+    }
+    position.ATUALIZADO_POR = updatedBy;
 
     const saved = await this.positionRepository.save(position);
     this.logger.log(`Cargo ${id} atualizado por ${updatedBy}`);
@@ -87,7 +102,8 @@ export class PositionsService {
 
   async remove(id: string, deletedBy: string): Promise<void> {
     const position = await this.findOne(id);
-    await this.positionRepository.remove(position);
+    position.EXCLUIDO_POR = deletedBy;
+    await this.positionRepository.softRemove(position);
     this.logger.log(`Cargo ${id} removido por ${deletedBy}`);
   }
 }
