@@ -5,12 +5,20 @@ import {
   initTestDataSource,
 } from './helpers/position.helper';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
+import { UserRole } from 'src/common/enums/user-role.enum';
+
+let employeeToken: string;
 
 describe('POST /positions', () => {
   beforeAll(async () => {
     await AppDataSource.initialize();
     initTestDataSource(AppDataSource);
     await AuthHelper.setup(AppDataSource);
+    employeeToken = await AuthHelper.createSessionAs(
+      AppDataSource,
+      'employee_teste',
+      UserRole.EMPLOYEE,
+    );
   });
 
   afterAll(async () => {
@@ -40,10 +48,35 @@ describe('POST /positions', () => {
     expect(body.succeeded).toBe(false);
   });
 
+  it('deve retornar 400 quando o body é inválido', async () => {
+    const { status, body } = await createPosition({ NOME: '' });
+
+    expect(status).toBe(400);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 400 quando NOME excede 100 caracteres', async () => {
+    const { status, body } = await createPosition({ NOME: 'A'.repeat(101) });
+
+    expect(status).toBe(400);
+    expect(body.succeeded).toBe(false);
+  });
+
   it('deve retornar 401 quando não autenticado', async () => {
     const { status, body } = await createPosition({ NOME: 'Sem Auth' }, false);
 
     expect(status).toBe(401);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 403 quando usuário não tem permissão', async () => {
+    const { status, body } = await createPosition(
+      { NOME: 'Cargo 403' },
+      true,
+      employeeToken,
+    );
+
+    expect(status).toBe(403);
     expect(body.succeeded).toBe(false);
   });
 });
