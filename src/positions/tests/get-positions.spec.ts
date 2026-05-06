@@ -1,11 +1,11 @@
 import { AppDataSource } from '../../config/database/data-source';
+import { AuthHelper } from '../../auth/tests/helpers/auth.helper';
 import {
   cleanupAll,
   createPosition,
   getAllPositions,
   initTestDataSource,
 } from './helpers/position.helper';
-import { AuthHelper } from '../../auth/tests/helpers/auth.helper';
 
 describe('GET /positions', () => {
   beforeAll(async () => {
@@ -32,13 +32,9 @@ describe('GET /positions', () => {
   });
 
   it('deve retornar 401 quando não autenticado', async () => {
-    const response = await fetch('http://localhost:3001/positions', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const { status, body } = await getAllPositions(false);
 
-    const body = await response.json();
-    expect(response.status).toBe(401);
+    expect(status).toBe(401);
     expect(body.succeeded).toBe(false);
   });
 });

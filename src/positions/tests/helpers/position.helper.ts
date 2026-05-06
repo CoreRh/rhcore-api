@@ -1,5 +1,7 @@
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
 import { ApiResponse } from 'src/common/tests/helpers/api-response.helper';
+import { BaseEntityStatusEnum } from 'src/common/enums/base-entity-status.enum';
+import { CreatePositionDto } from 'src/positions/dto/create-position.dto';
 import { DataSource } from 'typeorm';
 
 const BASE_URL = 'http://localhost:3001';
@@ -35,6 +37,7 @@ export async function createPosition(
     DEPARTAMENTO_ID: string;
   }>,
   authenticated = true,
+  token?: string,
 ): Promise<{ status: number; ok: boolean; body: ApiResponse<PositionData> }> {
   const payload = {
     NOME: overrides?.NOME ?? 'Desenvolvedor Junior',
@@ -48,38 +51,35 @@ export async function createPosition(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
+      ...(authenticated
+        ? { Authorization: `Bearer ${token ?? AuthHelper.getAccessToken()}` }
+        : {}),
     },
     body: JSON.stringify(payload),
   });
 
-  const data = (await response.json()) as ApiResponse<PositionData>;
   return {
     status: response.status,
     ok: response.ok,
-    body: data,
+    body: await response.json(),
   };
 }
 
-export async function getAllPositions(): Promise<{
-  status: number;
-  ok: boolean;
-  body: ApiResponse<PositionData[]>;
-}> {
+export async function getAllPositions(
+  authenticated = true,
+): Promise<{ status: number; ok: boolean; body: ApiResponse<PositionData[]> }> {
   const response = await fetch(`${BASE_URL}${POSITIONS_ENDPOINT}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      ...AuthHelper.getAuthHeader(),
+      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
     },
   });
-
-  const data = (await response.json()) as ApiResponse<PositionData[]>;
 
   return {
     status: response.status,
     ok: response.ok,
-    body: data,
+    body: await response.json(),
   };
 }
 
@@ -100,6 +100,50 @@ export async function getPositionById(
     status: response.status,
     ok: response.ok,
     body: data,
+  };
+}
+
+export async function updatePosition(
+  id: string,
+  body: Partial<CreatePositionDto & { STATUS: BaseEntityStatusEnum }>,
+  authenticated = true,
+  token?: string,
+): Promise<{ status: number; ok: boolean; body: ApiResponse<PositionData> }> {
+  const response = await fetch(`${BASE_URL}${POSITIONS_ENDPOINT}/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authenticated
+        ? { Authorization: `Bearer ${token ?? AuthHelper.getAccessToken()}` }
+        : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  return {
+    status: response.status,
+    ok: response.ok,
+    body: await response.json(),
+  };
+}
+
+export async function deletePosition(
+  id: string,
+  authenticated = true,
+  token?: string,
+): Promise<{ status: number; ok: boolean; body: ApiResponse<null> }> {
+  const response = await fetch(`${BASE_URL}${POSITIONS_ENDPOINT}/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authenticated
+        ? { Authorization: `Bearer ${token ?? AuthHelper.getAccessToken()}` }
+        : {}),
+    },
+  });
+  return {
+    status: response.status,
+    ok: response.ok,
+    body: await response.json(),
   };
 }
 
