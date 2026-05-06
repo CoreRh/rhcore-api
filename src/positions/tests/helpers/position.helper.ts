@@ -1,7 +1,6 @@
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
 import { ApiResponse } from 'src/common/tests/helpers/api-response.helper';
-import { BaseEntityStatusEnum } from 'src/common/enums/base-entity-status.enum';
-import { CreatePositionDto } from 'src/positions/dto/create-position.dto';
+import { UpdatePositionDto } from 'src/positions/dto/update-position.dto';
 import { DataSource } from 'typeorm';
 
 const BASE_URL = 'http://localhost:3001';
@@ -111,7 +110,7 @@ export async function getPositionById(
 
 export async function updatePosition(
   id: string,
-  body: Partial<CreatePositionDto & { STATUS: BaseEntityStatusEnum }>,
+  body: Partial<UpdatePositionDto>,
   authenticated = true,
   token?: string,
 ): Promise<{ status: number; ok: boolean; body: ApiResponse<PositionData> }> {

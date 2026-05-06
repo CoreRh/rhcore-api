@@ -95,7 +95,7 @@ describe('PATCH /positions/:id', () => {
   });
 
   it('deve retornar 403 quando usuário não tem permissão', async () => {
-    const created = await createPosition({ NOME: 'Cargo Para 403' });
+    const created = await createPosition({ NOME: 'Cargo Para 403 Patch' });
     const id = created.body.data!.ID;
 
     const { status, body } = await updatePosition(

@@ -39,5 +39,5 @@ export class Position extends BaseEntity {
 
   @ManyToOne(() => Department, { nullable: true })
   @JoinColumn({ name: 'DEPARTAMENTO_ID' })
-  DEPARTAMENTO: Department;
+  DEPARTAMENTO: Department | null;
 }

@@ -55,7 +55,7 @@ export class PositionsService {
 
   async findOne(id: string): Promise<Position> {
     const position = await this.positionRepository.findOne({
-      where: { ID: id },
+      where: { ID: id, STATUS: BaseEntityStatusEnum.ATIVO },
       relations: ['DEPARTAMENTO'],
     });
 
@@ -91,13 +91,13 @@ export class PositionsService {
     if (dto.DEPARTAMENTO_ID !== undefined) {
       position.DEPARTAMENTO = dto.DEPARTAMENTO_ID
         ? ({ ID: dto.DEPARTAMENTO_ID } as Department)
-        : (null as unknown as Department);
+        : null;
     }
     position.ATUALIZADO_POR = updatedBy;
 
-    const saved = await this.positionRepository.save(position);
+    await this.positionRepository.save(position);
     this.logger.log(`Cargo ${id} atualizado por ${updatedBy}`);
-    return saved;
+    return this.findOne(id);
   }
 
   async remove(id: string, deletedBy: string): Promise<void> {
