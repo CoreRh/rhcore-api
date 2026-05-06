@@ -97,7 +97,13 @@ export class PositionsService {
 
     await this.positionRepository.save(position);
     this.logger.log(`Cargo ${id} atualizado por ${updatedBy}`);
-    return this.findOne(id);
+    const updated = await this.positionRepository.findOne({
+      where: { ID: id },
+      relations: ['DEPARTAMENTO'],
+    });
+    if (!updated)
+      throw new NotFoundException(`Cargo com ID ${id} não encontrado`);
+    return updated;
   }
 
   async remove(id: string, deletedBy: string): Promise<void> {

@@ -8,7 +8,6 @@ import {
 } from './helpers/position.helper';
 import { createDepartment } from 'src/departments/tests/helpers/department.helper';
 import { UserRole } from 'src/common/enums/user-role.enum';
-import { cleanupAll as cleanupDepartments } from 'src/departments/tests/helpers/department.helper';
 
 let employeeToken: string;
 
@@ -26,7 +25,7 @@ describe('PATCH /positions/:id', () => {
 
   afterAll(async () => {
     await cleanupPositions();
-    await cleanupDepartments();
+    await AppDataSource.query('TRUNCATE TABLE "DEPARTAMENTOS" CASCADE');
     await AppDataSource.destroy();
   });
 
