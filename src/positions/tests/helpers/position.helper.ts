@@ -67,12 +67,15 @@ export async function createPosition(
 
 export async function getAllPositions(
   authenticated = true,
+  token?: string,
 ): Promise<{ status: number; ok: boolean; body: ApiResponse<PositionData[]> }> {
   const response = await fetch(`${BASE_URL}${POSITIONS_ENDPOINT}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
+      ...(authenticated
+        ? { Authorization: `Bearer ${token ?? AuthHelper.getAccessToken()}` }
+        : {}),
     },
   });
 
@@ -86,12 +89,15 @@ export async function getAllPositions(
 export async function getPositionById(
   id: string,
   authenticated = true,
+  token?: string,
 ): Promise<{ status: number; ok: boolean; body: ApiResponse<PositionData> }> {
   const response = await fetch(`${BASE_URL}${POSITIONS_ENDPOINT}/${id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
+      ...(authenticated
+        ? { Authorization: `Bearer ${token ?? AuthHelper.getAccessToken()}` }
+        : {}),
     },
   });
 

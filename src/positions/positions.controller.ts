@@ -28,6 +28,7 @@ import {
 import {
   BadRequestResponseDto,
   ConflictResponseDto,
+  ForbiddenResponseDto,
   NotFoundResponseDto,
   UnauthorizedResponseDto,
 } from 'src/common/dto/error-response.dto';
@@ -67,8 +68,13 @@ export class PositionsController {
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
+    status: 403,
+    description: 'Acesso negado. Requer perfil ADMIN ou MANAGER.',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
     status: 409,
-    description: 'Já exoste um cargo com esse nome.',
+    description: 'Já existe um cargo com esse nome.',
     type: ConflictResponseDto,
   })
   async create(
@@ -86,7 +92,7 @@ export class PositionsController {
   @Get()
   @ApiOperation({
     summary: 'Listar cargos',
-    description: 'Endpoint responável por listar todos os cargos',
+    description: 'Endpoint responsável por listar todos os cargos',
   })
   @ApiResponse({
     status: 200,
@@ -121,7 +127,7 @@ export class PositionsController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Cardo encontrado com sucesso.',
+    description: 'Cargo encontrado com sucesso.',
     type: PositionResponseDto,
   })
   @ApiResponse({
@@ -150,7 +156,7 @@ export class PositionsController {
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   @ApiOperation({
     summary: 'Atualizar cargo',
-    description: 'Enpoint responsável por atualizar os dados de um cargo',
+    description: 'Endpoint responsável por atualizar os dados de um cargo',
   })
   @ApiParam({
     name: 'id',
@@ -177,6 +183,11 @@ export class PositionsController {
     status: 404,
     description: 'Cargo não encontrado.',
     type: NotFoundResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso negado. Requer perfil ADMIN ou MANAGER.',
+    type: ForbiddenResponseDto,
   })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -222,6 +233,11 @@ export class PositionsController {
     status: 404,
     description: 'Cargo não encontrado.',
     type: NotFoundResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso negado. Requer perfil ADMIN ou MANAGER.',
+    type: ForbiddenResponseDto,
   })
   async remove(
     @Param('id', ParseUUIDPipe) id: string,

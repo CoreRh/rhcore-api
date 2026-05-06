@@ -44,7 +44,7 @@ describe('PATCH /positions/:id', () => {
   });
 
   it('deve persistir DEPARTAMENTO_ID ao atualizar (200)', async () => {
-    const dept = await createDepartment({ NOME: 'RH Pach', SIGLA: 'RHP' });
+    const dept = await createDepartment({ NOME: 'RH Patch', SIGLA: 'RHP' });
     const deptId = dept.body.data!.ID;
     const created = await createPosition({ NOME: 'Cargo com Dept' });
     const id = created.body.data!.ID;
@@ -65,6 +65,18 @@ describe('PATCH /positions/:id', () => {
     );
 
     expect(status).toBe(404);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 400 quando o DEPARTAMENTO_ID não é um UUID válido', async () => {
+    const created = await createPosition({ NOME: 'Cargo UUID Inválido' });
+    const id = created.body.data!.ID;
+
+    const { status, body } = await updatePosition(id, {
+      DEPARTAMENTO_ID: 'não-e-um-uuid',
+    });
+
+    expect(status).toBe(400);
     expect(body.succeeded).toBe(false);
   });
 

@@ -55,6 +55,13 @@ describe('POST /positions', () => {
     expect(body.succeeded).toBe(false);
   });
 
+  it('deve retornar 400 quando NOME excede 100 caracteres', async () => {
+    const { status, body } = await createPosition({ NOME: 'A'.repeat(101) });
+
+    expect(status).toBe(400);
+    expect(body.succeeded).toBe(false);
+  });
+
   it('deve retornar 401 quando não autenticado', async () => {
     const { status, body } = await createPosition({ NOME: 'Sem Auth' }, false);
 
