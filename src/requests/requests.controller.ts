@@ -46,10 +46,25 @@ export class RequestsController {
   constructor(private readonly requestsService: RequestsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Criar solicitação' })
-  @ApiResponse({ status: 201, type: RequestResponseDto })
-  @ApiResponse({ status: 400, type: BadRequestResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
+  @ApiOperation({
+    summary: 'Criar solicitação',
+    description: 'Endpoint responsável por criar uma nova solicitação.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Solicitação criada com sucesso.',
+    type: RequestResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos',
+    type: BadRequestResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    type: UnauthorizedResponseDto,
+  })
   async create(
     @Body() dto: CreateRequestDto,
     @Req() req: AuthenticatedRequest,
@@ -63,9 +78,20 @@ export class RequestsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar solicitações' })
-  @ApiResponse({ status: 200, type: RequestListResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
+  @ApiOperation({
+    summary: 'Listar solicitações',
+    description: 'Endpoint responsável por listar todas as solicitações',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Solicitações listadas com sucesso.',
+    type: RequestListResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    type: UnauthorizedResponseDto,
+  })
   async findAll(
     @Req() req: AuthenticatedRequest,
   ): Promise<RequestListResponseDto> {
@@ -78,15 +104,32 @@ export class RequestsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Buscar solicitações por ID' })
+  @ApiOperation({
+    summary: 'Buscar solicitações por ID',
+    description:
+      'Endpoint responsável por retornar os dados de uma solicitação específica',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID da solicitação',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: RequestResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Solicitação encontrada com sucesso.',
+    type: RequestResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Solicitação não encontrada',
+    type: NotFoundResponseDto,
+  })
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<RequestResponseDto> {
@@ -99,17 +142,42 @@ export class RequestsController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar solicitação' })
+  @ApiOperation({
+    summary: 'Atualizar solicitação',
+    description:
+      'Enpoint responsável por atualizar os dados de uma solicitação.',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID da solicitação',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: RequestResponseDto })
-  @ApiResponse({ status: 400, type: BadRequestResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Solicitação atualizada com sucesso.',
+    type: RequestResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos',
+    type: BadRequestResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para realizar esta ação',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Solicitação não encontrada',
+    type: NotFoundResponseDto,
+  })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateRequestDto,
@@ -126,17 +194,41 @@ export class RequestsController {
   @Patch(':id/approve')
   @UseGuards(PermissionsGuard)
   @RequirePermissions(UserPermission.APPROVE_REQUESTS)
-  @ApiOperation({ summary: 'Aprovar solicitação' })
+  @ApiOperation({
+    summary: 'Aprovar solicitação',
+    description: 'Endpoint responsável por aprovar uma solicitação pendente.',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID da solicitação',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: RequestResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
-  @ApiResponse({ status: 409, type: ConflictResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Solicitação aprovada com sucesso.',
+    type: RequestResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para realizar esta ação',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Solicitação não encontrada',
+    type: NotFoundResponseDto,
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflito ao aprovar a solicitação, já aprovada ou recusada)',
+    type: ConflictResponseDto,
+  })
   async approve(
     @Param('id', ParseUUIDPipe) id: string,
     @Req() req: AuthenticatedRequest,
@@ -154,16 +246,36 @@ export class RequestsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remover solicitação' })
+  @ApiOperation({
+    summary: 'Remover solicitação',
+    description: 'Endpoint responsável por remover uma solicitação específica.',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID da solicitação',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: SuccessMessageResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Solicitação removida com sucesso.',
+    type: SuccessMessageResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para realizar esta ação',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Solicitação não encontrada',
+    type: NotFoundResponseDto,
+  })
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
     @Req() req: AuthenticatedRequest,
