@@ -48,7 +48,7 @@ export class RequestsController {
   @Post()
   @ApiOperation({
     summary: 'Criar solicitação',
-    description: 'Endpoint responsável por criar uma nova solicitação.',
+    description: 'Endpoint responsável por criar uma nova solicitação',
   })
   @ApiResponse({
     status: 201,
@@ -57,12 +57,12 @@ export class RequestsController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Dados inválidos',
+    description: 'Dados inválidos.',
     type: BadRequestResponseDto,
   })
   @ApiResponse({
     status: 401,
-    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
     type: UnauthorizedResponseDto,
   })
   async create(
@@ -89,7 +89,7 @@ export class RequestsController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
     type: UnauthorizedResponseDto,
   })
   async findAll(
@@ -122,12 +122,12 @@ export class RequestsController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
     status: 404,
-    description: 'Solicitação não encontrada',
+    description: 'Solicitação não encontrada.',
     type: NotFoundResponseDto,
   })
   async findOne(
@@ -145,7 +145,7 @@ export class RequestsController {
   @ApiOperation({
     summary: 'Atualizar solicitação',
     description:
-      'Enpoint responsável por atualizar os dados de uma solicitação.',
+      'Endpoint responsável por atualizar os dados de uma solicitação',
   })
   @ApiParam({
     name: 'id',
@@ -160,22 +160,22 @@ export class RequestsController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Dados inválidos',
+    description: 'Dados inválidos.',
     type: BadRequestResponseDto,
   })
   @ApiResponse({
     status: 401,
-    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
     status: 403,
-    description: 'Sem permissão para realizar esta ação',
+    description: 'Sem permissão para realizar esta ação.',
     type: ForbiddenResponseDto,
   })
   @ApiResponse({
     status: 404,
-    description: 'Solicitação não encontrada',
+    description: 'Solicitação não encontrada.',
     type: NotFoundResponseDto,
   })
   async update(
@@ -196,7 +196,7 @@ export class RequestsController {
   @RequirePermissions(UserPermission.APPROVE_REQUESTS)
   @ApiOperation({
     summary: 'Aprovar solicitação',
-    description: 'Endpoint responsável por aprovar uma solicitação pendente.',
+    description: 'Endpoint responsável por aprovar uma solicitação pendente',
   })
   @ApiParam({
     name: 'id',
@@ -211,22 +211,22 @@ export class RequestsController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
     status: 403,
-    description: 'Sem permissão para realizar esta ação',
+    description: 'Sem permissão para realizar esta ação.',
     type: ForbiddenResponseDto,
   })
   @ApiResponse({
     status: 404,
-    description: 'Solicitação não encontrada',
+    description: 'Solicitação não encontrada.',
     type: NotFoundResponseDto,
   })
   @ApiResponse({
     status: 409,
-    description: 'Conflito ao aprovar a solicitação, já aprovada ou recusada)',
+    description: 'Solicitação já foi aprovada anteriormente.',
     type: ConflictResponseDto,
   })
   async approve(
@@ -248,7 +248,7 @@ export class RequestsController {
   @Delete(':id')
   @ApiOperation({
     summary: 'Remover solicitação',
-    description: 'Endpoint responsável por remover uma solicitação específica.',
+    description: 'Endpoint responsável por remover uma solicitação específica',
   })
   @ApiParam({
     name: 'id',
@@ -263,17 +263,17 @@ export class RequestsController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
     status: 403,
-    description: 'Sem permissão para realizar esta ação',
+    description: 'Sem permissão para realizar esta ação.',
     type: ForbiddenResponseDto,
   })
   @ApiResponse({
     status: 404,
-    description: 'Solicitação não encontrada',
+    description: 'Solicitação não encontrada.',
     type: NotFoundResponseDto,
   })
   async remove(
