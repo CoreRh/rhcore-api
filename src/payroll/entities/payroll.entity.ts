@@ -73,6 +73,16 @@ export class Payroll extends BaseEntity {
   OUTROS_DESCONTOS: number;
 
   @Column({
+    name: 'VALOR_PASSAGEM',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: decimalTransformer,
+  })
+  VALOR_PASSAGEM: number;
+
+  @Column({
     name: 'DESCONTO_VT',
     type: 'decimal',
     precision: 10,

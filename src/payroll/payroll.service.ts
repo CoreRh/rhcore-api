@@ -12,30 +12,25 @@ import { CreatePayrollDto } from './dto/create-payroll.dto';
 import { Employee } from 'src/employees/entities/employee.entity';
 import { PayrollStatusEnum } from './enums/payroll-status.enum';
 import { UpdatePayrollDto } from './dto/update-payroll.dto';
-import { TDocumentDefinitions } from 'pdfmake/interfaces';
-import PdfPrinter from 'pdfmake/js/Printer';
-import pdfVirtualfs from 'pdfmake/js/virtual-fs';
-import PdfURLResolver from 'pdfmake/js/URLResolver';
-import pdfVfsFonts from 'pdfmake/build/vfs_fonts';
 
-pdfVirtualfs.writeFileSync(
-  'Roboto-Regular.ttf',
-  Buffer.from(pdfVfsFonts['Roboto-Regular.ttf'], 'base64'),
-);
-pdfVirtualfs.writeFileSync(
-  'Roboto-Medium.ttf',
-  Buffer.from(pdfVfsFonts['Roboto-Medium.ttf'], 'base64'),
-);
-pdfVirtualfs.writeFileSync(
-  'Roboto-Italic.ttf',
-  Buffer.from(pdfVfsFonts['Roboto-Italic.ttf'], 'base64'),
-);
-pdfVirtualfs.writeFileSync(
-  'Roboto-MediumItalic.ttf',
-  Buffer.from(pdfVfsFonts['Roboto-MediumItalic.ttf'], 'base64'),
-);
+const INSS_FAIXAS = [
+  { ate: 1518.0, aliquota: 0.075 },
+  { ate: 2793.88, aliquota: 0.09 },
+  { ate: 4190.83, aliquota: 0.12 },
+  { ate: 8157.41, aliquota: 0.14 },
+] as const;
 
-const pdfUrlResolver = new PdfURLResolver(pdfVirtualfs);
+const IRRF_DEDUCAO_DEPENDENTE = 189.59;
+const IRRF_ISENCAO = 2259.2;
+
+const IRRF_FAIXAS = [
+  { ate: 2826.65, aliquota: 0.075, deducao: 169.44 },
+  { ate: 3751.05, aliquota: 0.15, deducao: 381.44 },
+  { ate: 4664.68, aliquota: 0.225, deducao: 662.77 },
+  { ate: Infinity, aliquota: 0.275, deducao: 896.0 },
+] as const;
+
+const VT_PERCENTUAL_TETO = 0.06;
 
 @Injectable()
 export class PayrollService {
@@ -44,15 +39,12 @@ export class PayrollService {
   constructor(
     @InjectRepository(Payroll)
     private readonly payrollRepository: Repository<Payroll>,
+    @InjectRepository(Employee)
+    private readonly employeeRepository: Repository<Employee>,
   ) {}
 
   private calcINSS(base: number): number {
-    const faixas = [
-      { ate: 1518.0, aliquota: 0.075 },
-      { ate: 2793.88, aliquota: 0.09 },
-      { ate: 4190.83, aliquota: 0.12 },
-      { ate: 8157.41, aliquota: 0.14 },
-    ];
+    const faixas = INSS_FAIXAS;
 
     let inss = 0;
     let anterior = 0;
@@ -71,21 +63,19 @@ export class PayrollService {
   }
 
   private calcIRRF(base: number, inss: number, dependentes: number): number {
-    const deducaoDependente = 189.59 * dependentes;
+    const deducaoDependente = IRRF_DEDUCAO_DEPENDENTE * dependentes;
     const baseCalculo = base - inss - deducaoDependente;
 
-    if (baseCalculo <= 2259.2) return 0;
-    if (baseCalculo <= 2826.65)
-      return Math.round((baseCalculo * 0.075 - 169.44) * 100) / 100;
-    if (baseCalculo <= 3751.05)
-      return Math.round((baseCalculo * 0.15 - 381.44) * 100) / 100;
-    if (baseCalculo <= 4664.68)
-      return Math.round((baseCalculo * 0.225 - 662.77) * 100) / 100;
-    return Math.round((baseCalculo * 0.275 - 896.0) * 100) / 100;
+    if (baseCalculo <= IRRF_ISENCAO) return 0;
+
+    const faixa = IRRF_FAIXAS.find((f) => baseCalculo <= f.ate)!;
+    return (
+      Math.round((baseCalculo * faixa.aliquota - faixa.deducao) * 100) / 100
+    );
   }
 
   private calcVT(salario: number, valorPassagem: number): number {
-    const teto = Math.round(salario * 0.06 * 100) / 100;
+    const teto = Math.round(salario * VT_PERCENTUAL_TETO * 100) / 100;
     return Math.min(valorPassagem, teto);
   }
 
@@ -108,6 +98,16 @@ export class PayrollService {
   }
 
   async create(dto: CreatePayrollDto, createBy: string): Promise<Payroll> {
+    const employee = await this.employeeRepository.findOne({
+      where: { ID: dto.FUNCIONARIO_ID },
+    });
+
+    if (!employee) {
+      throw new NotFoundException(
+        `Funcionário com ID ${dto.FUNCIONARIO_ID} não encontrado`,
+      );
+    }
+
     const existing = await this.payrollRepository.findOne({
       where: {
         FUNCIONARIO: { ID: dto.FUNCIONARIO_ID },
@@ -141,6 +141,7 @@ export class PayrollService {
       DESCONTO_IRRF: irrf,
       OUTROS_DESCONTOS: outros,
       DESCONTO_VT: vt,
+      VALOR_PASSAGEM: dto.VALOR_PASSAGEM ?? 0,
       SALARIO_LIQUIDO: this.calcLiquido(
         dto.SALARIO_BASE,
         bonus,
@@ -161,7 +162,6 @@ export class PayrollService {
 
   async findAll(): Promise<Payroll[]> {
     return this.payrollRepository.find({
-      relations: ['FUNCIONARIO'],
       order: { ANO_REFERENCIA: 'DESC', MES_REFERENCIA: 'DESC' },
     });
   }
@@ -169,7 +169,6 @@ export class PayrollService {
   async findOne(id: string): Promise<Payroll> {
     const payroll = await this.payrollRepository.findOne({
       where: { ID: id },
-      relations: ['FUNCIONARIO'],
     });
 
     if (!payroll) {
@@ -217,12 +216,12 @@ export class PayrollService {
     const bonus = dto.BONUS ?? Number(payroll.BONUS);
     const dependentes =
       dto.NUMERO_DEPENDENTES ?? Number(payroll.NUMERO_DEPENDENTES);
-    const inss = dto.DESCONTO_INSS ?? this.calcINSS(base);
-    const irrf = dto.DESCONTO_IRRF ?? this.calcIRRF(base, inss, dependentes);
+    const inss = dto.DESCONTO_INSS ?? Number(payroll.DESCONTO_INSS);
+    const irrf = dto.DESCONTO_IRRF ?? Number(payroll.DESCONTO_IRRF);
     const outros = dto.OUTROS_DESCONTOS ?? Number(payroll.OUTROS_DESCONTOS);
     const vt = this.calcVT(
       base,
-      dto.VALOR_PASSAGEM ?? Number(payroll.DESCONTO_VT),
+      dto.VALOR_PASSAGEM ?? Number(payroll.VALOR_PASSAGEM),
     );
 
     Object.assign(payroll, {
@@ -241,6 +240,7 @@ export class PayrollService {
       DESCONTO_INSS: inss,
       DESCONTO_IRRF: irrf,
       OUTROS_DESCONTOS: outros,
+      VALOR_PASSAGEM: dto.VALOR_PASSAGEM ?? Number(payroll.VALOR_PASSAGEM),
       DESCONTO_VT: vt,
       SALARIO_LIQUIDO: this.calcLiquido(base, bonus, inss, irrf, outros, vt),
       ...(dto.STATUS_FOLHA !== undefined && { STATUS_FOLHA: dto.STATUS_FOLHA }),
@@ -276,276 +276,5 @@ export class PayrollService {
     const payroll = await this.findOne(id);
     await this.payrollRepository.remove(payroll);
     this.logger.log(`Folha de pagamento ${id} removida por ${deletedBy}`);
-  }
-
-  async generateSlip(id: string): Promise<Buffer> {
-    const payroll = await this.findOne(id);
-
-    const printer = new PdfPrinter(
-      {
-        Roboto: {
-          normal: 'Roboto-Regular.ttf',
-          bold: 'Roboto-Medium.ttf',
-          italics: 'Roboto-Italic.ttf',
-          bolditalics: 'Roboto-MediumItalic.ttf',
-        },
-      },
-      pdfVirtualfs,
-      pdfUrlResolver,
-    );
-
-    const mes = String(payroll.MES_REFERENCIA).padStart(2, '0');
-    const ano = payroll.ANO_REFERENCIA;
-
-    const fmt = (val: number | string) =>
-      Number(val).toLocaleString('pt-BR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-
-    const totalVencimentos =
-      Number(payroll.SALARIO_BASE) + Number(payroll.BONUS);
-    const totalDescontos =
-      Number(payroll.DESCONTO_INSS) +
-      Number(payroll.DESCONTO_IRRF) +
-      Number(payroll.OUTROS_DESCONTOS) +
-      Number(payroll.DESCONTO_VT);
-
-    const buildVia = (label: string) => [
-      {
-        columns: [
-          { text: label, style: 'viaLabel', width: '*' },
-          {
-            text: `Holerite  ${mes}/${ano}`,
-            style: 'header',
-            alignment: 'right',
-            width: 'auto',
-          },
-        ],
-        margin: [0, 0, 0, 6],
-      },
-      {
-        table: {
-          widths: ['*', '*'],
-          body: [
-            [
-              { text: 'Funcionário', style: 'label' },
-              { text: 'Matrícula', style: 'label' },
-            ],
-            [
-              { text: payroll.FUNCIONARIO.NOME, style: 'value' },
-              { text: payroll.FUNCIONARIO.MATRICULA, style: 'value' },
-            ],
-            [
-              { text: 'Nº de Dependentes', style: 'label' },
-              { text: 'Status', style: 'label' },
-            ],
-            [
-              { text: String(payroll.NUMERO_DEPENDENTES), style: 'value' },
-              { text: payroll.STATUS_FOLHA, style: 'value' },
-            ],
-          ],
-        },
-        layout: 'lightHorizontalLines',
-        margin: [0, 0, 0, 8],
-      },
-      {
-        table: {
-          widths: ['*', 'auto', 'auto'],
-          body: [
-            [
-              { text: 'Descrição', style: 'tableHeader' },
-              { text: 'Vencimentos', style: 'tableHeader', alignment: 'right' },
-              { text: 'Descontos', style: 'tableHeader', alignment: 'right' },
-            ],
-            [
-              { text: 'Salário Base', style: 'tableRow' },
-              {
-                text: fmt(payroll.SALARIO_BASE),
-                style: 'tableRow',
-                alignment: 'right',
-              },
-              { text: '-', style: 'tableRow', alignment: 'right' },
-            ],
-            [
-              { text: 'Bônus', style: 'tableRow' },
-              {
-                text: fmt(payroll.BONUS),
-                style: 'tableRow',
-                alignment: 'right',
-              },
-              { text: '-', style: 'tableRow', alignment: 'right' },
-            ],
-            [
-              { text: 'Desconto INSS', style: 'tableRow' },
-              { text: '-', style: 'tableRow', alignment: 'right' },
-              {
-                text: fmt(payroll.DESCONTO_INSS),
-                style: 'tableRow',
-                alignment: 'right',
-              },
-            ],
-            [
-              { text: 'Desconto IRRF', style: 'tableRow' },
-              { text: '-', style: 'tableRow', alignment: 'right' },
-              {
-                text: fmt(payroll.DESCONTO_IRRF),
-                style: 'tableRow',
-                alignment: 'right',
-              },
-            ],
-            [
-              { text: 'Outros Descontos', style: 'tableRow' },
-              { text: '-', style: 'tableRow', alignment: 'right' },
-              {
-                text: fmt(payroll.OUTROS_DESCONTOS),
-                style: 'tableRow',
-                alignment: 'right',
-              },
-            ],
-            [
-              { text: 'Vale Transporte', style: 'tableRow' },
-              { text: '-', style: 'tableRow', alignment: 'right' },
-              {
-                text: fmt(payroll.DESCONTO_VT),
-                style: 'tableRow',
-                alignment: 'right',
-              },
-            ],
-            [
-              { text: 'Total', bold: true },
-              { text: fmt(totalVencimentos), bold: true, alignment: 'right' },
-              { text: fmt(totalDescontos), bold: true, alignment: 'right' },
-            ],
-          ],
-        },
-        layout: 'lightHorizontalLines',
-        margin: [0, 0, 0, 6],
-      },
-      {
-        table: {
-          widths: ['*', 'auto'],
-          body: [
-            [
-              { text: 'SALÁRIO LÍQUIDO', bold: true, fontSize: 11 },
-              {
-                text: `R$ ${fmt(payroll.SALARIO_LIQUIDO)}`,
-                bold: true,
-                fontSize: 11,
-                alignment: 'right',
-              },
-            ],
-          ],
-        },
-        layout: 'lightHorizontalLines',
-        margin: [0, 0, 0, 6],
-      },
-      ...(payroll.OBSERVACAO
-        ? [
-            {
-              text: `Observação: ${payroll.OBSERVACAO}`,
-              style: 'obs',
-              margin: [0, 0, 0, 6] as [number, number, number, number],
-            },
-          ]
-        : []),
-      {
-        columns: [
-          {
-            stack: [
-              { text: '', margin: [0, 20, 0, 0] },
-              {
-                canvas: [
-                  {
-                    type: 'line',
-                    x1: 0,
-                    y1: 0,
-                    x2: 190,
-                    y2: 0,
-                    lineWidth: 0.5,
-                  },
-                ],
-              },
-              { text: 'Assinatura do Funcionário', style: 'signLabel' },
-            ],
-            width: '*',
-          },
-          {
-            stack: [
-              { text: '', margin: [0, 20, 0, 0] },
-              {
-                canvas: [
-                  {
-                    type: 'line',
-                    x1: 0,
-                    y1: 0,
-                    x2: 190,
-                    y2: 0,
-                    lineWidth: 0.5,
-                  },
-                ],
-              },
-              { text: 'Assinatura RH / Empresa', style: 'signLabel' },
-            ],
-            width: '*',
-          },
-        ],
-        margin: [0, 0, 0, 0],
-      },
-    ];
-
-    const docDefinition: TDocumentDefinitions = {
-      pageSize: 'A4',
-      pageMargins: [36, 36, 36, 36],
-      defaultStyle: { font: 'Roboto', fontSize: 9 },
-      content: [
-        ...buildVia('1ª VIA — EMPRESA'),
-        {
-          canvas: [
-            {
-              type: 'line',
-              x1: 0,
-              y1: 0,
-              x2: 523,
-              y2: 0,
-              lineWidth: 0.5,
-              dash: { length: 4, space: 4 },
-            },
-          ],
-          margin: [0, 14, 0, 14],
-        },
-        ...buildVia('2ª VIA — FUNCIONÁRIO'),
-      ] as TDocumentDefinitions['content'],
-      styles: {
-        header: { fontSize: 13, bold: true },
-        viaLabel: { fontSize: 8, bold: true, color: '#555555' },
-        label: { fontSize: 8, color: '#888888' },
-        value: { fontSize: 10, bold: true },
-        tableHeader: {
-          bold: true,
-          fillColor: '#f0f0f0',
-          margin: [4, 3, 4, 3],
-          fontSize: 8,
-        },
-        tableRow: { margin: [4, 2, 4, 2], fontSize: 9 },
-        signLabel: {
-          fontSize: 8,
-          color: '#888888',
-          alignment: 'center',
-          margin: [0, 3, 0, 0],
-        },
-        obs: { fontSize: 8, italics: true, color: '#555555' },
-      },
-    };
-
-    const doc = await printer.createPdfKitDocument(docDefinition);
-
-    return new Promise((resolve, reject) => {
-      const chunks: Buffer[] = [];
-      doc.on('data', (chunk: Buffer) => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
-      doc.end();
-    });
   }
 }
