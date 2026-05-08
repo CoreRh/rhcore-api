@@ -2,14 +2,13 @@ import { AppDataSource } from 'src/config/database/data-source';
 import {
   cleanupAll,
   createPayroll,
-  deletePayroll,
+  getPayrollSlip,
   initTestDataSource,
-  payPayroll,
   setupDefaultEmployee,
 } from './helpers/payroll.helper';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
 
-describe('DELETE /payroll/:id', () => {
+describe('GET /payroll/:id/slip', () => {
   beforeAll(async () => {
     await AppDataSource.initialize();
     initTestDataSource(AppDataSource);
@@ -22,44 +21,30 @@ describe('DELETE /payroll/:id', () => {
     await AppDataSource.destroy();
   });
 
-  it('deve remover folha de pagamento com sucesso (200)', async () => {
+  it('deve gerar holerite em PDF com sucesso (200)', async () => {
     const created = await createPayroll();
     const id = created.body.data!.ID;
 
-    const { status, body } = await deletePayroll(id);
+    const { status, contentType } = await getPayrollSlip(id);
 
     expect(status).toBe(200);
-    expect(body.succeeded).toBe(true);
-    expect(body.message).toBe('Folha de pagamento removida com sucesso.');
-  });
-
-  it('deve remover folha de pagamento com status PAGO com sucesso (200)', async () => {
-    const created = await createPayroll({ MES_REFERENCIA: 5 });
-    const id = created.body.data!.ID;
-    await payPayroll(id);
-
-    const { status, body } = await deletePayroll(id);
-
-    expect(status).toBe(200);
-    expect(body.succeeded).toBe(true);
+    expect(contentType).toBe('application/pdf');
   });
 
   it('deve retornar 404 quando folha de pagamento não existe', async () => {
-    const { status, body } = await deletePayroll(
+    const { status } = await getPayrollSlip(
       '00000000-0000-0000-0000-000000000000',
     );
 
     expect(status).toBe(404);
-    expect(body.succeeded).toBe(false);
   });
 
   it('deve retornar 401 quando não autenticado', async () => {
-    const { status, body } = await deletePayroll(
+    const { status } = await getPayrollSlip(
       '00000000-0000-0000-0000-000000000000',
       false,
     );
 
     expect(status).toBe(401);
-    expect(body.succeeded).toBe(false);
   });
 });

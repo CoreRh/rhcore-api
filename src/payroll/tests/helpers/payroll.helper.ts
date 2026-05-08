@@ -221,8 +221,27 @@ export async function deletePayroll(
   };
 }
 
+export async function getPayrollSlip(
+  id: string,
+  authenticated = true,
+): Promise<{ status: number; contentType: string | null }> {
+  const response = await fetch(`${BASE_URL}${PAYROLL_ENDPOINT}/${id}/slip`, {
+    method: 'GET',
+    headers: {
+      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
+    },
+  });
+
+  return {
+    status: response.status,
+    contentType: response.headers.get('content-type'),
+  };
+}
+
 export async function cleanupAll() {
   if (!dataSource) throw new Error('Data source não iniciado');
-  await dataSource.query('TRUNCATE TABLE "FOLHA_PAGAMENTO" CASCADE');
-  await dataSource.query('TRUNCATE TABLE "FUNCIONARIOS" CASCADE');
+  await dataSource.query('DELETE FROM "FOLHA_PAGAMENTO"');
+  await dataSource.query('DELETE FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1', [
+    '2025001',
+  ]);
 }

@@ -77,7 +77,7 @@ describe('POST /payroll', () => {
     expect(body.data?.SALARIO_LIQUIDO).toBe(4100);
   });
 
-  it('deve manter DESCONTO_VT zerao quando VALOR_PASSAGEM não é informado', async () => {
+  it('deve manter DESCONTO_VT zerado quando VALOR_PASSAGEM não é informado', async () => {
     const { status, body } = await createPayroll({
       MES_REFERENCIA: 10,
       ANO_REFERENCIA: 2025,
@@ -126,6 +126,15 @@ describe('POST /payroll', () => {
     const { status, body } = await createPayroll({ SALARIO_BASE: -100 });
 
     expect(status).toBe(400);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 404 quando FUNCIONARIO_ID não existe', async () => {
+    const { status, body } = await createPayroll({
+      FUNCIONARIO_ID: 'a3bb189e-8bf9-4888-9912-ace4e6543099',
+    });
+
+    expect(status).toBe(404);
     expect(body.succeeded).toBe(false);
   });
 
