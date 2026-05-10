@@ -36,15 +36,8 @@ describe('GET /employees', () => {
   });
 
   it('deve retornar 401 quando não autenticado', async () => {
-    const response = await fetch('http://localhost:3001/employees', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const body = await response.json();
-    expect(response.status).toBe(401);
+    const { status, body } = await getAllEmployees(false);
+    expect(status).toBe(401);
     expect(body.succeeded).toBe(false);
   });
 });

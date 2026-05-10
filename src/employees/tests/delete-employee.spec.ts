@@ -6,6 +6,7 @@ import {
   deleteEmployee,
   initTestDataSource,
 } from './helpers/employee.helper';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
 describe('DELETE /employees/:id', () => {
   beforeAll(async () => {
@@ -59,7 +60,8 @@ describe('DELETE /employees/:id', () => {
     const id = created.body.data!.ID;
     const employeeToken = await AuthHelper.createSessionAs(
       AppDataSource,
-      'employee_test',
+      'employee-sem-permissao',
+      UserRole.EMPLOYEE,
     );
 
     const response = await deleteEmployee(id, true, employeeToken);

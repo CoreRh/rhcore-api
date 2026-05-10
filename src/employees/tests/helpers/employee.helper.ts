@@ -38,6 +38,7 @@ export async function createEmployee(
     DATA_ADMISSAO: string;
     DEPARTAMENTO_ID: string;
     CARGO_ID: string;
+    GESTOR_ID: string;
   }>,
   authenticated = true,
 ): Promise<{ status: number; ok: boolean; body: ApiResponse<EmployeeData> }> {
@@ -52,6 +53,7 @@ export async function createEmployee(
       DEPARTAMENTO_ID: overrides.DEPARTAMENTO_ID,
     }),
     ...(overrides?.CARGO_ID && { CARGO_ID: overrides.CARGO_ID }),
+    ...(overrides?.GESTOR_ID && { GESTOR_ID: overrides.GESTOR_ID }),
   };
 
   const response = await fetch(`${BASE_URL}${EMPLOYEES_ENDPOINT}`, {
@@ -71,16 +73,14 @@ export async function createEmployee(
   };
 }
 
-export async function getAllEmployees(): Promise<{
-  status: number;
-  ok: boolean;
-  body: ApiResponse<EmployeeData[]>;
-}> {
+export async function getAllEmployees(
+  authenticated = true,
+): Promise<{ status: number; ok: boolean; body: ApiResponse<EmployeeData[]> }> {
   const response = await fetch(`${BASE_URL}${EMPLOYEES_ENDPOINT}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      ...AuthHelper.getAuthHeader(),
+      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
     },
   });
 
@@ -176,7 +176,7 @@ export async function deleteEmployee(
 export async function cleanupAll() {
   if (!dataSource) throw new Error('Data source não iniciado');
   await dataSource.query(
-    'DELETE FROM "FUNCIONARIOS" WHERE "MATRICULA" LOKE $1',
+    'DELETE FROM "FUNCIONARIOS" WHERE "MATRICULA" LIKE $1',
     ['2025%'],
   );
 }

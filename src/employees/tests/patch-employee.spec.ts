@@ -6,6 +6,7 @@ import {
   updateEmployee,
 } from './helpers/employee.helper';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
 describe('PATCH /employees/:id', () => {
   beforeAll(async () => {
@@ -84,6 +85,36 @@ describe('PATCH /employees/:id', () => {
     expect(response.body.succeeded).toBe(false);
   });
 
+  it('deve retornar 404 quando DEPARTAMENTO_ID não existe', async () => {
+    const created = await createEmployee({
+      MATRICULA: '2025006',
+      CPF: '666.666.666-66',
+      EMAIL: 'f@f.com',
+    });
+    const id = created.body.data!.ID;
+
+    const response = await updateEmployee(id, {
+      DEPARTAMENTO_ID: '00000000-0000-0000-0000-000000000000',
+    });
+    expect(response.status).toBe(404);
+    expect(response.body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 404 quando CARGO_ID não existe', async () => {
+    const created = await createEmployee({
+      MATRICULA: '2025007',
+      CPF: '777.777.777-77',
+      EMAIL: 'g@g.com',
+    });
+    const id = created.body.data!.ID;
+
+    const response = await updateEmployee(id, {
+      CARGO_ID: '00000000-0000-0000-0000-000000000000',
+    });
+    expect(response.status).toBe(404);
+    expect(response.body.succeeded).toBe(false);
+  });
+
   it('deve retornar 403 quando usuário EMPLOYEE tenta atualizar', async () => {
     const created = await createEmployee({
       MATRICULA: '2025005',
@@ -93,7 +124,8 @@ describe('PATCH /employees/:id', () => {
     const id = created.body.data!.ID;
     const employeeToken = await AuthHelper.createSessionAs(
       AppDataSource,
-      'employee_test',
+      'employee-sem-permissao',
+      UserRole.EMPLOYEE,
     );
 
     const response = await updateEmployee(

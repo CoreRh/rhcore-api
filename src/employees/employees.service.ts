@@ -70,7 +70,7 @@ export class EmployeesService {
       });
       if (!manager)
         throw new NotFoundException(
-          `Gestor com ID ${dto.CARGO_ID} não encontrado`,
+          `Gestor com ID ${dto.GESTOR_ID} não encontrado`,
         );
     }
 
@@ -155,7 +155,7 @@ export class EmployeesService {
       });
       if (!manager)
         throw new NotFoundException(
-          `Gestor com o ID ${dto.GESTOR_ID} não encontrado`,
+          `Gestor com ID ${dto.GESTOR_ID} não encontrado`,
         );
     }
 

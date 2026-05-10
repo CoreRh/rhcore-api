@@ -105,6 +105,17 @@ describe('POST /employees', () => {
     expect(body.succeeded).toBe(false);
   });
 
+  it('deve retornar 404 quando GESTOR_ID não existe', async () => {
+    const { status, body } = await createEmployee({
+      MATRICULA: '2025012',
+      CPF: '012.012.012-12',
+      EMAIL: 'gestor@test.com',
+      GESTOR_ID: '00000000-0000-0000-0000-000000000000',
+    });
+    expect(status).toBe(404);
+    expect(body.succeeded).toBe(false);
+  });
+
   it('deve retornar 401 quando não autenticado', async () => {
     const { status, body } = await createEmployee(
       {
