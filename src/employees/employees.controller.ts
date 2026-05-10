@@ -35,6 +35,8 @@ import type { AuthenticatedRequest } from 'src/common/interfaces/authenticated-r
 import { SuccessMessageResponseDto } from 'src/common/dto/base-response.dto';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { UserPermission } from 'src/common/enums/user-permission.enum';
+import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
+import { RequirePermissions } from 'src/auth/decorators/permissions.decorator';
 
 @ApiTags('Funcionários')
 @ApiBearerAuth('JWT-auth')
@@ -62,18 +64,12 @@ export class EmployeesController {
   }
 
   @Get()
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.VIEW_ALL_EMPLOYEES)
   @ApiOperation({ summary: 'Listar funcionários' })
   @ApiResponse({ status: 200, type: EmployeeListResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  async findAll(
-    @Req() req: AuthenticatedRequest,
-  ): Promise<EmployeeListResponseDto> {
-    if (
-      req.user.role === UserRole.EMPLOYEE &&
-      !req.user.permissions.includes(UserPermission.VIEW_ALL_EMPLOYEES)
-    ) {
-      throw new ForbiddenException('Acesso negado');
-    }
+  async findAll(): Promise<EmployeeListResponseDto> {
     const employees = await this.employeesService.findAll();
     return {
       succeeded: true,
@@ -102,6 +98,8 @@ export class EmployeesController {
   }
 
   @Patch(':id')
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.MANAGE_EMPLOYEES)
   @ApiOperation({ summary: 'Atualizar funcionário' })
   @ApiParam({
     name: 'id',
@@ -130,6 +128,8 @@ export class EmployeesController {
   }
 
   @Delete(':id')
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.MANAGE_EMPLOYEES)
   @ApiOperation({ summary: 'Remover funcionário' })
   @ApiParam({
     name: 'id',
