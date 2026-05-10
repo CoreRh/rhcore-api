@@ -62,7 +62,7 @@ export class CreateEmployeeDto {
   @IsNotEmpty({ message: 'A data de admissão é obrigatória' })
   DATA_ADMISSAO: string;
 
-  @ApiProperty({ example: 'a3bb189e-8bf9-3888-9912-ace4e6543002' })
+  @ApiPropertyOptional({ example: 'a3bb189e-8bf9-3888-9912-ace4e6543002' })
   @IsUUID('4', { message: 'O ID do departamento deve ser um UUID válido' })
   @IsOptional()
   DEPARTAMENTO_ID?: string;
