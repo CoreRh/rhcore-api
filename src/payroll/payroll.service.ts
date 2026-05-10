@@ -44,12 +44,10 @@ export class PayrollService {
   ) {}
 
   private calcINSS(base: number): number {
-    const faixas = INSS_FAIXAS;
-
     let inss = 0;
     let anterior = 0;
 
-    for (const faixa of faixas) {
+    for (const faixa of INSS_FAIXAS) {
       if (base > faixa.ate) {
         inss += (faixa.ate - anterior) * faixa.aliquota;
         anterior = faixa.ate;
