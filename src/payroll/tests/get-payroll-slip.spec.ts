@@ -7,12 +7,14 @@ import {
   setupDefaultEmployee,
 } from './helpers/payroll.helper';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
 describe('GET /payroll/:id/slip', () => {
   beforeAll(async () => {
     await AppDataSource.initialize();
     initTestDataSource(AppDataSource);
     await AuthHelper.setup(AppDataSource);
+    await cleanupAll();
     await setupDefaultEmployee();
   });
 
@@ -46,5 +48,21 @@ describe('GET /payroll/:id/slip', () => {
     );
 
     expect(status).toBe(401);
+  });
+
+  it('deve retornar 403 quando autenticado sem permissao MANAGE_PAYROLL', async () => {
+    const token = await AuthHelper.createSessionAs(
+      AppDataSource,
+      'employee-sem-permissao',
+      UserRole.EMPLOYEE,
+    );
+
+    const { status } = await getPayrollSlip(
+      '00000000-0000-0000-0000-000000000000',
+      true,
+      token,
+    );
+
+    expect(status).toBe(403);
   });
 });

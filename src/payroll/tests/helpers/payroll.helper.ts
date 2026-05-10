@@ -50,7 +50,17 @@ export async function setupDefaultEmployee(): Promise<string> {
   });
 
   const data = await response.json();
-  defaultEmployeeId = data.data.ID;
+
+  if (data.data?.ID) {
+    defaultEmployeeId = data.data.ID;
+  } else {
+    const result = await dataSource.query(
+      'SELECT "ID" FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1',
+      ['2025001'],
+    );
+    defaultEmployeeId = result[0]?.ID;
+  }
+
   return defaultEmployeeId;
 }
 
@@ -224,11 +234,16 @@ export async function deletePayroll(
 export async function getPayrollSlip(
   id: string,
   authenticated = true,
+  token?: string,
 ): Promise<{ status: number; contentType: string | null }> {
   const response = await fetch(`${BASE_URL}${PAYROLL_ENDPOINT}/${id}/slip`, {
     method: 'GET',
     headers: {
-      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
+      ...(token
+        ? { Authorization: `Bearer ${token}` }
+        : authenticated
+          ? AuthHelper.getAuthHeader()
+          : {}),
     },
   });
 
@@ -240,7 +255,10 @@ export async function getPayrollSlip(
 
 export async function cleanupAll() {
   if (!dataSource) throw new Error('Data source não iniciado');
-  await dataSource.query('DELETE FROM "FOLHA_PAGAMENTO"');
+  await dataSource.query(
+    'DELETE FROM "FOLHA_PAGAMENTO" WHERE "FUNCIONARIO_ID" IN (SELECT "ID" FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1)',
+    ['2025001'],
+  );
   await dataSource.query('DELETE FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1', [
     '2025001',
   ]);
