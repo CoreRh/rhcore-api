@@ -83,6 +83,28 @@ describe('POST /employees', () => {
     expect(body.succeeded).toBe(false);
   });
 
+  it('deve retornar 404 quando DEPARTAMENTO_ID não existe', async () => {
+    const { status, body } = await createEmployee({
+      MATRICULA: '2025010',
+      CPF: '010.010.010-10',
+      EMAIL: 'dept@test.com',
+      DEPARTAMENTO_ID: '00000000-0000-0000-0000-000000000000',
+    });
+    expect(status).toBe(404);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 404 quando CARGO_ID não existe', async () => {
+    const { status, body } = await createEmployee({
+      MATRICULA: '2025011',
+      CPF: '011.011.011-11',
+      EMAIL: 'cargo@test.com',
+      CARGO_ID: '00000000-0000-0000-0000-000000000000',
+    });
+    expect(status).toBe(404);
+    expect(body.succeeded).toBe(false);
+  });
+
   it('deve retornar 401 quando não autenticado', async () => {
     const { status, body } = await createEmployee(
       {

@@ -3,10 +3,9 @@ import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
 import {
   cleanupAll,
   createEmployee,
+  deleteEmployee,
   initTestDataSource,
 } from './helpers/employee.helper';
-
-const BASE_URL = 'http://localhost:3001';
 
 describe('DELETE /employees/:id', () => {
   beforeAll(async () => {
@@ -28,48 +27,43 @@ describe('DELETE /employees/:id', () => {
     });
     const id = created.body.data!.ID;
 
-    const response = await fetch(`${BASE_URL}/employees/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        ...AuthHelper.getAuthHeader(),
-      },
-    });
-
-    const body = await response.json();
+    const response = await deleteEmployee(id);
     expect(response.status).toBe(200);
-    expect(body.succeeded).toBe(true);
-    expect(body.message).toBe('Funcionário removido com sucesso.');
+    expect(response.body.succeeded).toBe(true);
+    expect(response.body.message).toBe('Funcionário removido com sucesso.');
   });
 
   it('deve retornar 404 quando funcionário não existe', async () => {
-    const response = await fetch(
-      `${BASE_URL}/employees/00000000-0000-0000-0000-000000000000`,
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...AuthHelper.getAuthHeader(),
-        },
-      },
+    const response = await deleteEmployee(
+      '00000000-0000-0000-0000-000000000000',
     );
-
-    const body = await response.json();
     expect(response.status).toBe(404);
-    expect(body.succeeded).toBe(false);
+    expect(response.body.succeeded).toBe(false);
   });
 
   it('deve retornar 401 quando não autenticado', async () => {
-    const response = await fetch(
-      `${BASE_URL}/employees/00000000-0000-0000-0000-000000000000`,
-      {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      },
+    const response = await deleteEmployee(
+      '00000000-0000-0000-0000-000000000000',
+      false,
+    );
+    expect(response.status).toBe(401);
+    expect(response.body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 403 quando usuário EMPLOYEE tenta remover', async () => {
+    const created = await createEmployee({
+      MATRICULA: '2025005',
+      CPF: '555.555.555-55',
+      EMAIL: 'e@e.com',
+    });
+    const id = created.body.data!.ID;
+    const employeeToken = await AuthHelper.createSessionAs(
+      AppDataSource,
+      'employee_test',
     );
 
-    const body = await response.json();
-    expect(response.status).toBe(401);
-    expect(body.succeeded).toBe(false);
+    const response = await deleteEmployee(id, true, employeeToken);
+    expect(response.status).toBe(403);
+    expect(response.body.succeeded).toBe(false);
   });
 });

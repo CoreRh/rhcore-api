@@ -3,10 +3,9 @@ import {
   cleanupAll,
   createEmployee,
   initTestDataSource,
+  updateEmployee,
 } from './helpers/employee.helper';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
-
-const BASE_URL = 'http://localhost:3001';
 
 describe('PATCH /employees/:id', () => {
   beforeAll(async () => {
@@ -28,52 +27,82 @@ describe('PATCH /employees/:id', () => {
     });
     const id = created.body.data!.ID;
 
-    const response = await fetch(`${BASE_URL}/employees/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        ...AuthHelper.getAuthHeader(),
-      },
-      body: JSON.stringify({ NOME: 'João Atualizado' }),
-    });
-
-    const body = await response.json();
+    const response = await updateEmployee(id, { NOME: 'João Atualizado' });
     expect(response.status).toBe(200);
-    expect(body.succeeded).toBe(true);
-    expect(body.data?.NOME).toBe('João Atualizado');
-    expect(body.message).toBe('Funcionário atualizado com sucesso.');
+    expect(response.body.succeeded).toBe(true);
+    expect(response.body.data?.NOME).toBe('João Atualizado');
+    expect(response.body.message).toBe('Funcionário atualizado com sucesso.');
   });
 
   it('deve retornar 404 quando funcionário não existe', async () => {
-    const response = await fetch(
-      `${BASE_URL}/employees/00000000-0000-0000-0000-000000000000`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...AuthHelper.getAuthHeader(),
-        },
-        body: JSON.stringify({ NOME: 'Qualquer' }),
-      },
+    const response = await updateEmployee(
+      '00000000-0000-0000-0000-000000000000',
+      { NOME: 'Qualquer' },
     );
-
-    const body = await response.json();
     expect(response.status).toBe(404);
-    expect(body.succeeded).toBe(false);
+    expect(response.body.succeeded).toBe(false);
   });
 
   it('deve retornar 401 quando não autenticado', async () => {
-    const response = await fetch(
-      `${BASE_URL}/employees/00000000-0000-0000-0000-000000000000`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ NOME: 'Qualquer' }),
-      },
+    const response = await updateEmployee(
+      '00000000-0000-0000-0000-000000000000',
+      { NOME: 'Qualquer' },
+      false,
+    );
+    expect(response.status).toBe(401);
+    expect(response.body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 400 quando CPF é inválido', async () => {
+    const created = await createEmployee({
+      MATRICULA: '2025002',
+      CPF: '222.222.222-22',
+      EMAIL: 'b@b.com',
+    });
+    const id = created.body.data!.ID;
+
+    const response = await updateEmployee(id, { CPF: 'cpf-invalido' });
+    expect(response.status).toBe(400);
+    expect(response.body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 409 ao atualizar para MATRICULA já existente', async () => {
+    await createEmployee({
+      MATRICULA: '2025003',
+      CPF: '333.333.333-33',
+      EMAIL: 'c@c.com',
+    });
+    const second = await createEmployee({
+      MATRICULA: '2025004',
+      CPF: '444.444.444-44',
+      EMAIL: 'd@d.com',
+    });
+    const id = second.body.data!.ID;
+
+    const response = await updateEmployee(id, { MATRICULA: '2025003' });
+    expect(response.status).toBe(409);
+    expect(response.body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 403 quando usuário EMPLOYEE tenta atualizar', async () => {
+    const created = await createEmployee({
+      MATRICULA: '2025005',
+      CPF: '555.555.555-55',
+      EMAIL: 'e@e.com',
+    });
+    const id = created.body.data!.ID;
+    const employeeToken = await AuthHelper.createSessionAs(
+      AppDataSource,
+      'employee_test',
     );
 
-    const body = await response.json();
-    expect(response.status).toBe(401);
-    expect(body.succeeded).toBe(false);
+    const response = await updateEmployee(
+      id,
+      { NOME: 'Tentativa' },
+      true,
+      employeeToken,
+    );
+    expect(response.status).toBe(403);
+    expect(response.body.succeeded).toBe(false);
   });
 });
