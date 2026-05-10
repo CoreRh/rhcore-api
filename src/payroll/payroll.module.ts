@@ -10,6 +10,5 @@ import { PayrollSlipService } from './payroll-slip.service';
   imports: [TypeOrmModule.forFeature([Payroll, Employee])],
   controllers: [PayrollController],
   providers: [PayrollService, PayrollSlipService],
-  exports: [PayrollService, PayrollSlipService],
 })
 export class PayrollModule {}
