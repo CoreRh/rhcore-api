@@ -36,6 +36,8 @@ export async function createEmployee(
     EMAIL: string;
     DATA_NASCIMENTO: string;
     DATA_ADMISSAO: string;
+    DEPARTAMENTO_ID: string;
+    CARGO_ID: string;
   }>,
   authenticated = true,
 ): Promise<{ status: number; ok: boolean; body: ApiResponse<EmployeeData> }> {
@@ -46,6 +48,10 @@ export async function createEmployee(
     EMAIL: overrides?.EMAIL ?? 'joao.silva@empresa.com.br',
     DATA_NASCIMENTO: overrides?.DATA_NASCIMENTO ?? '1990-05-20',
     DATA_ADMISSAO: overrides?.DATA_ADMISSAO ?? '2025-01-15',
+    ...(overrides?.DEPARTAMENTO_ID && {
+      DEPARTAMENTO_ID: overrides.DEPARTAMENTO_ID,
+    }),
+    ...(overrides?.CARGO_ID && { CARGO_ID: overrides.CARGO_ID }),
   };
 
   const response = await fetch(`${BASE_URL}${EMPLOYEES_ENDPOINT}`, {
@@ -106,7 +112,71 @@ export async function getEmployeeById(
   };
 }
 
+export async function updateEmployee(
+  id: string,
+  dto: Partial<{
+    NOME: string;
+    CPF: string;
+    EMAIL: string;
+    MATRICULA: string;
+    DATA_NASCIMENTO: string;
+    DATA_ADMISSAO: string;
+    DEPARTAMENTO_ID: string;
+    CARGO_ID: string;
+    GESTOR_ID: string;
+  }>,
+  authenticated = true,
+  token?: string,
+): Promise<{ status: number; ok: boolean; body: ApiResponse<EmployeeData> }> {
+  const response = await fetch(`${BASE_URL}${EMPLOYEES_ENDPOINT}/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token
+        ? { Authorization: `Bearer ${token}` }
+        : authenticated
+          ? AuthHelper.getAuthHeader()
+          : {}),
+    },
+    body: JSON.stringify(dto),
+  });
+
+  const data = (await response.json()) as ApiResponse<EmployeeData>;
+  return {
+    status: response.status,
+    ok: response.ok,
+    body: data,
+  };
+}
+
+export async function deleteEmployee(
+  id: string,
+  authenticated = true,
+  token?: string,
+): Promise<{ status: number; ok: boolean; body: ApiResponse<null> }> {
+  const response = await fetch(`${BASE_URL}${EMPLOYEES_ENDPOINT}/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token
+        ? { Authorization: `Bearer ${token}` }
+        : authenticated
+          ? AuthHelper.getAuthHeader()
+          : {}),
+    },
+  });
+
+  const data = (await response.json()) as ApiResponse<null>;
+  return {
+    status: response.status,
+    ok: response.ok,
+    body: data,
+  };
+}
 export async function cleanupAll() {
   if (!dataSource) throw new Error('Data source não iniciado');
-  await dataSource.query('TRUNCATE TABLE "FUNCIONARIOS" CASCADE');
+  await dataSource.query(
+    'DELETE FROM "FUNCIONARIOS" WHERE "MATRICULA" LOKE $1',
+    ['2025%'],
+  );
 }
