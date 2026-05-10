@@ -6,11 +6,11 @@ import PdfURLResolver from 'pdfmake/js/URLResolver';
 import pdfVfsFonts from 'pdfmake/build/vfs_fonts';
 import { PayrollService } from './payroll.service';
 
-const pdfUrlResolver = new PdfURLResolver(pdfVirtualfs);
-
 @Injectable()
 export class PayrollSlipService implements OnModuleInit {
   constructor(private readonly payrollService: PayrollService) {}
+
+  private pdfUrlResolver: PdfURLResolver;
 
   onModuleInit() {
     pdfVirtualfs.writeFileSync(
@@ -29,6 +29,7 @@ export class PayrollSlipService implements OnModuleInit {
       'Roboto-MediumItalic.ttf',
       Buffer.from(pdfVfsFonts['Roboto-MediumItalic.ttf'], 'base64'),
     );
+    this.pdfUrlResolver = new PdfURLResolver(pdfVirtualfs);
   }
 
   async generateSlip(id: string): Promise<Buffer> {
@@ -44,7 +45,7 @@ export class PayrollSlipService implements OnModuleInit {
         },
       },
       pdfVirtualfs,
-      pdfUrlResolver,
+      this.pdfUrlResolver,
     );
 
     const mes = String(payroll.MES_REFERENCIA).padStart(2, '0');
