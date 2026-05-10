@@ -74,7 +74,7 @@ export class PayrollService {
 
   private calcVT(salario: number, valorPassagem: number): number {
     const teto = Math.round(salario * VT_PERCENTUAL_TETO * 100) / 100;
-    return Math.min(valorPassagem, teto);
+    return Math.round(Math.min(valorPassagem, teto) * 100) / 100;
   }
 
   private calcLiquido(
@@ -160,6 +160,7 @@ export class PayrollService {
 
   async findAll(): Promise<Payroll[]> {
     return this.payrollRepository.find({
+      relations: ['FUNCIONARIO'],
       order: { ANO_REFERENCIA: 'DESC', MES_REFERENCIA: 'DESC' },
     });
   }
@@ -167,6 +168,7 @@ export class PayrollService {
   async findOne(id: string): Promise<Payroll> {
     const payroll = await this.payrollRepository.findOne({
       where: { ID: id },
+      relations: ['FUNCIONARIO'],
     });
 
     if (!payroll) {
@@ -214,8 +216,8 @@ export class PayrollService {
     const bonus = dto.BONUS ?? Number(payroll.BONUS);
     const dependentes =
       dto.NUMERO_DEPENDENTES ?? Number(payroll.NUMERO_DEPENDENTES);
-    const inss = dto.DESCONTO_INSS ?? Number(payroll.DESCONTO_INSS);
-    const irrf = dto.DESCONTO_IRRF ?? Number(payroll.DESCONTO_IRRF);
+    const inss = dto.DESCONTO_INSS ?? this.calcINSS(base);
+    const irrf = dto.DESCONTO_IRRF ?? this.calcIRRF(base, inss, dependentes);
     const outros = dto.OUTROS_DESCONTOS ?? Number(payroll.OUTROS_DESCONTOS);
     const vt = this.calcVT(
       base,

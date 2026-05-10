@@ -51,17 +51,16 @@ describe('GET /payroll/:id/slip', () => {
   });
 
   it('deve retornar 403 quando autenticado sem permissao MANAGE_PAYROLL', async () => {
+    const created = await createPayroll({ MES_REFERENCIA: 4 });
+    const id = created.body.data!.ID;
+
     const token = await AuthHelper.createSessionAs(
       AppDataSource,
       'employee-sem-permissao',
       UserRole.EMPLOYEE,
     );
 
-    const { status } = await getPayrollSlip(
-      '00000000-0000-0000-0000-000000000000',
-      true,
-      token,
-    );
+    const { status } = await getPayrollSlip(id, true, token);
 
     expect(status).toBe(403);
   });

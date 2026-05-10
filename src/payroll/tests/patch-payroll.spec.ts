@@ -75,6 +75,18 @@ describe('PATCH /payroll/:id', () => {
     expect(body.data?.SALARIO_LIQUIDO).toBe(4000);
   });
 
+  it('deve recalcular INSS e IRRF automaticamente ao atualizar SALARIO_BASE (200)', async () => {
+    const created = await createPayroll({ MES_REFERENCIA: 9 });
+    const id = created.body.data!.ID;
+
+    const { status, body } = await updatePayroll(id, { SALARIO_BASE: 6000 });
+
+    expect(status).toBe(200);
+    expect(body.data?.DESCONTO_INSS).toBe(649.6);
+    expect(body.data?.DESCONTO_IRRF).toBe(575.36);
+    expect(body.data?.SALARIO_LIQUIDO).toBe(4775.04);
+  });
+
   it('deve retornar 409 ao atualizar para mês/ano já existente para o funcionario', async () => {
     await createPayroll({ MES_REFERENCIA: 6 });
     const second = await createPayroll({ MES_REFERENCIA: 7 });

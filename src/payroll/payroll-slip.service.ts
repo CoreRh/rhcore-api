@@ -158,7 +158,10 @@ export class PayrollSlipService implements OnModuleInit {
               },
             ],
             [
-              { text: 'Vale Transporte', style: 'tableRow' },
+              {
+                text: `Vale Transporte (R$ ${fmt(payroll.VALOR_PASSAGEM)})`,
+                style: 'tableRow',
+              },
               { text: '-', style: 'tableRow', alignment: 'right' },
               {
                 text: fmt(payroll.DESCONTO_VT),

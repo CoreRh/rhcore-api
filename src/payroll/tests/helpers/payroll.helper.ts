@@ -49,16 +49,15 @@ export async function setupDefaultEmployee(): Promise<string> {
     }),
   });
 
-  const data = await response.json();
-
-  if (data.data?.ID) {
-    defaultEmployeeId = data.data.ID;
-  } else {
+  if (response.status === 409) {
     const result = await dataSource.query(
       'SELECT "ID" FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1',
       ['2025001'],
     );
     defaultEmployeeId = result[0]?.ID;
+  } else {
+    const data = await response.json();
+    defaultEmployeeId = data.data.ID;
   }
 
   return defaultEmployeeId;
