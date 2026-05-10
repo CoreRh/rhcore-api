@@ -37,13 +37,17 @@ import type { AuthenticatedRequest } from 'src/common/interfaces/authenticated-r
 import { UpdatePayrollDto } from './dto/update-payroll.dto';
 import { SuccessMessageResponseDto } from 'src/common/dto/base-response.dto';
 import type { Response } from 'express';
+import { PayrollSlipService } from './payroll-slip.service';
 
 @ApiTags('Folha de pagamento')
 @ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
 @Controller('payroll')
 export class PayrollController {
-  constructor(private readonly payrollService: PayrollService) {}
+  constructor(
+    private readonly payrollService: PayrollService,
+    private readonly payrollSlipService: PayrollSlipService,
+  ) {}
 
   @Post()
   @UseGuards(PermissionsGuard)
@@ -66,7 +70,7 @@ export class PayrollController {
   @ApiResponse({
     status: 401,
     description: 'Token de sessão não encontrado ou sessão inválida',
-    type: PayrollResponseDto,
+    type: UnauthorizedResponseDto,
   })
   @ApiResponse({
     status: 409,
@@ -94,7 +98,7 @@ export class PayrollController {
   @ApiResponse({
     status: 200,
     description: 'Folhas de pagamento listadas com sucesso.',
-    type: PayrollResponseDto,
+    type: PayrollListResponseDto,
   })
   @ApiResponse({
     status: 401,
@@ -148,6 +152,8 @@ export class PayrollController {
   }
 
   @Get(':id/slip')
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.MANAGE_PAYROLL)
   @ApiOperation({
     summary: 'Gerar holerite em PDF.',
     description:
@@ -175,7 +181,7 @@ export class PayrollController {
     @Param('id') id: string,
     @Res() res: Response,
   ): Promise<void> {
-    const pdf = await this.payrollService.generateSlip(id);
+    const pdf = await this.payrollSlipService.generateSlip(id);
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="holerite-${id}.pdf"`,
@@ -207,11 +213,11 @@ export class PayrollController {
   @ApiResponse({
     status: 400,
     description: 'Dados inválidos ou ausentes.',
-    type: PayrollResponseDto,
+    type: BadRequestResponseDto,
   })
   @ApiResponse({
     status: 401,
-    description: 'token de sessão não encontrado ou sessão inválida/expirada',
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
@@ -300,7 +306,7 @@ export class PayrollController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Folha de pagamento romovida com sucesso.',
+    description: 'Folha de pagamento removida com sucesso.',
     type: SuccessMessageResponseDto,
   })
   @ApiResponse({

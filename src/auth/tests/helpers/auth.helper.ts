@@ -90,6 +90,11 @@ export class AuthHelper {
     if (!this.refreshToken) throw new Error('Nenhum refresh token retornado');
   }
 
+  static getAccessToken() {
+    if (!this.accessToken) throw new Error('Usuário não autenticado');
+    return this.accessToken;
+  }
+
   static getAuthHeader() {
     if (!this.accessToken) throw new Error('Usuário não autenticado');
     return { Authorization: `Bearer ${this.accessToken}` };
