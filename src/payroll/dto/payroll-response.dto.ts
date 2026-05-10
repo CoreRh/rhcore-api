@@ -47,6 +47,9 @@ export class PayrollDataDto {
   @ApiProperty({ example: 220.0 })
   DESCONTO_VT: number;
 
+  @ApiProperty({ example: 400.0 })
+  VALOR_PASSAGEM: number;
+
   @ApiProperty({ example: 4550.0 })
   SALARIO_LIQUIDO: number;
 
@@ -61,6 +64,12 @@ export class PayrollDataDto {
 
   @ApiProperty({ example: '2026-01-01T00:00:00.000Z' })
   CRIADO_EM: Date;
+
+  @ApiProperty({ example: 'admin' })
+  ATUALIZADO_POR: string | null;
+
+  @ApiPropertyOptional({ example: '2026-01-01T00:00:00.000Z' })
+  ATUALIZADO_EM: Date | null;
 }
 
 export class PayrollResponseDto extends BaseSuccessResponseDto {

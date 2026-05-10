@@ -49,8 +49,17 @@ export async function setupDefaultEmployee(): Promise<string> {
     }),
   });
 
-  const data = await response.json();
-  defaultEmployeeId = data.data.ID;
+  if (response.status === 409) {
+    const result = await dataSource.query(
+      'SELECT "ID" FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1',
+      ['2025001'],
+    );
+    defaultEmployeeId = result[0]?.ID;
+  } else {
+    const data = await response.json();
+    defaultEmployeeId = data.data.ID;
+  }
+
   return defaultEmployeeId;
 }
 
@@ -221,8 +230,35 @@ export async function deletePayroll(
   };
 }
 
+export async function getPayrollSlip(
+  id: string,
+  authenticated = true,
+  token?: string,
+): Promise<{ status: number; contentType: string | null }> {
+  const response = await fetch(`${BASE_URL}${PAYROLL_ENDPOINT}/${id}/slip`, {
+    method: 'GET',
+    headers: {
+      ...(token
+        ? { Authorization: `Bearer ${token}` }
+        : authenticated
+          ? AuthHelper.getAuthHeader()
+          : {}),
+    },
+  });
+
+  return {
+    status: response.status,
+    contentType: response.headers.get('content-type'),
+  };
+}
+
 export async function cleanupAll() {
   if (!dataSource) throw new Error('Data source não iniciado');
-  await dataSource.query('TRUNCATE TABLE "FOLHA_PAGAMENTO" CASCADE');
-  await dataSource.query('TRUNCATE TABLE "FUNCIONARIOS" CASCADE');
+  await dataSource.query(
+    'DELETE FROM "FOLHA_PAGAMENTO" WHERE "FUNCIONARIO_ID" IN (SELECT "ID" FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1)',
+    ['2025001'],
+  );
+  await dataSource.query('DELETE FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1', [
+    '2025001',
+  ]);
 }
