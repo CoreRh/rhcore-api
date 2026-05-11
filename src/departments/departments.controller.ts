@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
@@ -47,12 +48,35 @@ export class DepartmentsController {
   @Post()
   @UseGuards(PermissionsGuard)
   @RequirePermissions(UserPermission.MANAGE_DEPARTMENTS)
-  @ApiOperation({ summary: 'Criar departamento' })
-  @ApiResponse({ status: 201, type: DepartmentResponseDto })
-  @ApiResponse({ status: 400, type: BadRequestResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 409, type: ConflictResponseDto })
-  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
+  @ApiOperation({
+    summary: 'Criar departamento',
+    description: 'Endpoint responsável por criar um novo departamento.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Funcionário criado com sucesso.',
+    type: DepartmentResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos',
+    type: BadRequestResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Já existe um funcionário com essa matrícula, CPF ou e-mail.',
+    type: ConflictResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para realizar esta ação.',
+    type: ForbiddenResponseDto,
+  })
   async create(
     @Body() dto: CreateDepartmentDto,
     @Req() req: AuthenticatedRequest,
@@ -69,9 +93,20 @@ export class DepartmentsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar departamentos' })
-  @ApiResponse({ status: 200, type: DepartmentListResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
+  @ApiOperation({
+    summary: 'Listar departamentos',
+    description: 'Endpoint responsável por listar todos os funcionários.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Departamentos listados com sucesso.',
+    type: DepartmentListResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
+    type: UnauthorizedResponseDto,
+  })
   async findAll(): Promise<DepartmentListResponseDto> {
     const departments = await this.departmentsService.findAll();
     return {
@@ -82,16 +117,35 @@ export class DepartmentsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Buscar departamento por ID' })
+  @ApiOperation({
+    summary: 'Buscar departamento por ID',
+    description:
+      'Endpoint responsável por retornar os dados de um departamento específico.',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID do departamento',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: DepartmentResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
-  async findOne(@Param('id') id: string): Promise<DepartmentResponseDto> {
+  @ApiResponse({
+    status: 200,
+    description: 'Departamento encontrado com sucesso.',
+    type: DepartmentResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Funcionário não encontrado.',
+    type: NotFoundResponseDto,
+  })
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<DepartmentResponseDto> {
     const department = await this.departmentsService.findOne(id);
     return {
       succeeded: true,
@@ -103,20 +157,49 @@ export class DepartmentsController {
   @Patch(':id')
   @UseGuards(PermissionsGuard)
   @RequirePermissions(UserPermission.MANAGE_DEPARTMENTS)
-  @ApiOperation({ summary: 'Atualizar departamento' })
+  @ApiOperation({
+    summary: 'Atualizar departamento',
+    description:
+      'Endpoint responsável por atualizar os dados de um departamento.',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID do funcionário',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: DepartmentResponseDto })
-  @ApiResponse({ status: 400, type: BadRequestResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
-  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
-  @ApiResponse({ status: 409, type: ConflictResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Departamento atualizado com sucesso.',
+    type: DepartmentResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos',
+    type: BadRequestResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Departamento não encontrado.',
+    type: NotFoundResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para realizar essa ação',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Já existe um departamento com esse ID',
+    type: ConflictResponseDto,
+  })
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateDepartmentDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<DepartmentResponseDto> {
@@ -135,18 +218,37 @@ export class DepartmentsController {
   @Delete(':id')
   @UseGuards(PermissionsGuard)
   @RequirePermissions(UserPermission.MANAGE_DEPARTMENTS)
-  @ApiOperation({ summary: 'Remover departamento' })
+  @ApiOperation({
+    summary: 'Remover departamento',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID do departamento',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: SuccessMessageResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
-  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Departamento removido com sucesso.',
+    type: SuccessMessageResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Departamento não encontrado',
+    type: NotFoundResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para realizar esta ação.',
+    type: ForbiddenResponseDto,
+  })
   async remove(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<SuccessMessageResponseDto> {
     await this.departmentsService.remove(id, req.user.username);
