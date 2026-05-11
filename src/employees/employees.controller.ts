@@ -232,7 +232,7 @@ export class EmployeesController {
   })
   @ApiResponse({
     status: 403,
-    description: 'Sem permissao para realizar esta ação.',
+    description: 'Sem permissão para realizar esta ação.',
     type: ForbiddenResponseDto,
   })
   @ApiResponse({
