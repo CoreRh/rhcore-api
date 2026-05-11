@@ -1,10 +1,11 @@
-import { AuthHelper } from '../../auth/tests/helpers/auth.helper';
-import { AppDataSource } from '../../config/database/data-source';
+import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
+import { AppDataSource } from 'src/config/database/data-source';
 import {
   cleanupAll,
   createDepartment,
   initTestDataSource,
 } from './helpers/department.helper';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
 describe('POST /departments', () => {
   beforeAll(async () => {
@@ -50,6 +51,46 @@ describe('POST /departments', () => {
     });
 
     expect(status).toBe(409);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 400 quando NOME está vazio', async () => {
+    const { status, body } = await createDepartment({ NOME: '', SIGLA: 'TST' });
+    expect(status).toBe(400);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 400 quando a SIGLA tem menos de 2 caracteres', async () => {
+    const { status, body } = await createDepartment({
+      NOME: 'Jurídico',
+      SIGLA: 'J',
+    });
+    expect(status).toBe(400);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 404 quando DEPARTAMENTO_PAI_ID não existe', async () => {
+    const { status, body } = await createDepartment({
+      NOME: 'Jurídico',
+      SIGLA: 'JUR',
+      DEPARTAMENTO_PAI_ID: '00000000-0000-4000-a000-000000000000',
+    });
+    expect(status).toBe(404);
+    expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 403 quando usuário EMPLOYEE tenta criar', async () => {
+    const employeeToken = await AuthHelper.createSessionAs(
+      AppDataSource,
+      'employee-sem-permisssao',
+      UserRole.EMPLOYEE,
+    );
+    const { status, body } = await createDepartment(
+      { NOME: 'Tentativa', SIGLA: 'TNT' },
+      true,
+      employeeToken,
+    );
+    expect(status).toBe(403);
     expect(body.succeeded).toBe(false);
   });
 
