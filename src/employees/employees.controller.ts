@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
@@ -45,11 +46,30 @@ export class EmployeesController {
   constructor(private readonly employeesService: EmployeesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Criar funcionário' })
-  @ApiResponse({ status: 201, type: EmployeeResponseDto })
-  @ApiResponse({ status: 400, type: BadRequestResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 409, type: ConflictResponseDto })
+  @ApiOperation({
+    summary: 'Criar funcionário',
+    description: 'Endpoint responsável por criar um novo funcionário',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Funcionário criado com sucesso.',
+    type: EmployeeResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos.',
+    type: BadRequestResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Já existe um funcionário com essa matrícula, CPF ou e-mail.',
+    type: ConflictResponseDto,
+  })
   async create(
     @Body() dto: CreateEmployeeDto,
     @Req() req: AuthenticatedRequest,
@@ -65,10 +85,25 @@ export class EmployeesController {
   @Get()
   @UseGuards(PermissionsGuard)
   @RequirePermissions(UserPermission.VIEW_ALL_EMPLOYEES)
-  @ApiOperation({ summary: 'Listar funcionários' })
-  @ApiResponse({ status: 200, type: EmployeeListResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
+  @ApiOperation({
+    summary: 'Listar funcionários',
+    description: 'Endpoint responsável por listar todos os funcionários',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Funcionários listados com sucesso',
+    type: EmployeeListResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para realizar esta ação.',
+    type: ForbiddenResponseDto,
+  })
   async findAll(): Promise<EmployeeListResponseDto> {
     const employees = await this.employeesService.findAll();
     return {
@@ -79,16 +114,35 @@ export class EmployeesController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Buscar funcionário por ID' })
+  @ApiOperation({
+    summary: 'Buscar funcionário por ID',
+    description:
+      'Endpoint responsável por retornar os dados de um funcionário específico',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID do funcionário',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: EmployeeResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
-  async findOne(@Param('id') id: string): Promise<EmployeeResponseDto> {
+  @ApiResponse({
+    status: 200,
+    description: 'Funcionário encontrado com sucesso.',
+    type: EmployeeResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Funcionário não encontrado.',
+    type: NotFoundResponseDto,
+  })
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<EmployeeResponseDto> {
     const employee = await this.employeesService.findOne(id);
     return {
       succeeded: true,
@@ -100,19 +154,44 @@ export class EmployeesController {
   @Patch(':id')
   @UseGuards(PermissionsGuard)
   @RequirePermissions(UserPermission.MANAGE_EMPLOYEES)
-  @ApiOperation({ summary: 'Atualizar funcionário' })
+  @ApiOperation({
+    summary: 'Atualizar funcionário',
+    description:
+      'Endpoint responsável por atualizar os dados de um funcionário',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID do funcionário',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: EmployeeResponseDto })
-  @ApiResponse({ status: 400, type: BadRequestResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Funcionário atualizado com sucesso',
+    type: EmployeeResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos',
+    type: BadRequestResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para realizar esta ação',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Funcionário não encontrado',
+    type: NotFoundResponseDto,
+  })
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateEmployeeDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<EmployeeResponseDto> {
@@ -131,18 +210,38 @@ export class EmployeesController {
   @Delete(':id')
   @UseGuards(PermissionsGuard)
   @RequirePermissions(UserPermission.MANAGE_EMPLOYEES)
-  @ApiOperation({ summary: 'Remover funcionário' })
+  @ApiOperation({
+    summary: 'Remover funcionário',
+    description: 'Endpoint responsável por remover um funcionário.',
+  })
   @ApiParam({
     name: 'id',
     type: 'string',
+    description: 'ID do funcionário',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
-  @ApiResponse({ status: 200, type: SuccessMessageResponseDto })
-  @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
-  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
-  @ApiResponse({ status: 404, type: NotFoundResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Funcionário removido com sucesso',
+    type: SuccessMessageResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
+    type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissao para realizar esta ação.',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Funcionário não encontrado.',
+    type: NotFoundResponseDto,
+  })
   async remove(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<SuccessMessageResponseDto> {
     await this.employeesService.remove(id, req.user.username);
