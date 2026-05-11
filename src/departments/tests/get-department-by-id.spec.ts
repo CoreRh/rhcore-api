@@ -20,7 +20,10 @@ describe('GET /departments/:id', () => {
   });
 
   it('deve retornar um departamento pelo ID (200)', async () => {
-    const created = await createDepartment({ NOME: 'Jurídico', SIGLA: 'JUR' });
+    const created = await createDepartment({
+      NOME: 'Jurídico',
+      SIGLA: 'TEST_JUR',
+    });
     const id = created.body.data!.ID;
 
     const { status, body } = await getDepartmentsById(id, true);

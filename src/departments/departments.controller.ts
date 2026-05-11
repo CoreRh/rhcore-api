@@ -26,12 +26,16 @@ import {
 import {
   BadRequestResponseDto,
   ConflictResponseDto,
+  ForbiddenResponseDto,
   NotFoundResponseDto,
   UnauthorizedResponseDto,
 } from 'src/common/dto/error-response.dto';
 import type { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { SuccessMessageResponseDto } from 'src/common/dto/base-response.dto';
+import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
+import { RequirePermissions } from 'src/auth/decorators/permissions.decorator';
+import { UserPermission } from 'src/common/enums/user-permission.enum';
 
 @ApiTags('Departamentos')
 @ApiBearerAuth('JWT-auth')
@@ -41,28 +45,31 @@ export class DepartmentsController {
   constructor(private readonly departmentsService: DepartmentsService) {}
 
   @Post()
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.MANAGE_DEPARTMENTS)
   @ApiOperation({ summary: 'Criar departamento' })
   @ApiResponse({ status: 201, type: DepartmentResponseDto })
   @ApiResponse({ status: 400, type: BadRequestResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   @ApiResponse({ status: 409, type: ConflictResponseDto })
+  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
   async create(
     @Body() dto: CreateDepartmentDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<DepartmentResponseDto> {
-    const departament = await this.departmentsService.create(
+    const department = await this.departmentsService.create(
       dto,
       req.user.username,
     );
     return {
       succeeded: true,
-      data: departament,
+      data: department,
       message: 'Departamento criado com sucesso.',
     };
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar departamento' })
+  @ApiOperation({ summary: 'Listar departamentos' })
   @ApiResponse({ status: 200, type: DepartmentListResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   async findAll(): Promise<DepartmentListResponseDto> {
@@ -70,7 +77,7 @@ export class DepartmentsController {
     return {
       succeeded: true,
       data: departments,
-      message: 'Departamentos listados com sucesso',
+      message: 'Departamentos listados com sucesso.',
     };
   }
 
@@ -85,15 +92,17 @@ export class DepartmentsController {
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
   async findOne(@Param('id') id: string): Promise<DepartmentResponseDto> {
-    const departament = await this.departmentsService.findOne(id);
+    const department = await this.departmentsService.findOne(id);
     return {
       succeeded: true,
-      data: departament,
+      data: department,
       message: 'Departamento encontrado com sucesso.',
     };
   }
 
   @Patch(':id')
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.MANAGE_DEPARTMENTS)
   @ApiOperation({ summary: 'Atualizar departamento' })
   @ApiParam({
     name: 'id',
@@ -104,24 +113,28 @@ export class DepartmentsController {
   @ApiResponse({ status: 400, type: BadRequestResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
+  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
+  @ApiResponse({ status: 409, type: ConflictResponseDto })
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateDepartmentDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<DepartmentResponseDto> {
-    const departament = await this.departmentsService.update(
+    const department = await this.departmentsService.update(
       id,
       dto,
       req.user.username,
     );
     return {
       succeeded: true,
-      data: departament,
-      message: 'Departamento atualizado com sucesso',
+      data: department,
+      message: 'Departamento atualizado com sucesso.',
     };
   }
 
   @Delete(':id')
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.MANAGE_DEPARTMENTS)
   @ApiOperation({ summary: 'Remover departamento' })
   @ApiParam({
     name: 'id',
@@ -131,6 +144,7 @@ export class DepartmentsController {
   @ApiResponse({ status: 200, type: SuccessMessageResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
+  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
   async remove(
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,

@@ -20,7 +20,7 @@ describe('GET /departments', () => {
   });
 
   it('deve listar departamentos com sucesso (200)', async () => {
-    await createDepartment({ NOME: 'Operações', SIGLA: 'OPS' });
+    await createDepartment({ NOME: 'Operações', SIGLA: 'TEST_OPS' });
 
     const { status, body } = await getAllDepartments();
 
@@ -28,17 +28,12 @@ describe('GET /departments', () => {
     expect(body.succeeded).toBe(true);
     expect(Array.isArray(body.data)).toBe(true);
     expect(body.data!.length).toBeGreaterThan(0);
-    expect(body.message).toBe('Departamentos listados com sucesso');
+    expect(body.message).toBe('Departamentos listados com sucesso.');
   });
 
   it('deve retornar 401 quando não autenticado', async () => {
-    const response = await fetch('http://localhost:3001/departments', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    const body = await response.json();
-    expect(response.status).toBe(401);
+    const { status, body } = await getAllDepartments(false);
+    expect(status).toBe(401);
     expect(body.succeeded).toBe(false);
   });
 });
