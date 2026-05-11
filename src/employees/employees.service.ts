@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { Employee } from './entities/employee.entity';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
@@ -19,6 +19,10 @@ export class EmployeesService {
   constructor(
     @InjectRepository(Employee)
     private readonly employeeRepository: Repository<Employee>,
+    @InjectRepository(Department)
+    private readonly departmentRepository: Repository<Department>,
+    @InjectRepository(Position)
+    private readonly positionRepository: Repository<Position>,
   ) {}
 
   async create(dto: CreateEmployeeDto, createdBy: string): Promise<Employee> {
@@ -42,6 +46,34 @@ export class EmployeesService {
       throw new ConflictException('Já existe um funcionário com esse e-mail');
     }
 
+    if (dto.DEPARTAMENTO_ID) {
+      const dept = await this.departmentRepository.findOne({
+        where: { ID: dto.DEPARTAMENTO_ID },
+      });
+      if (!dept)
+        throw new NotFoundException(
+          `Departamento com ID ${dto.DEPARTAMENTO_ID} não encontrado`,
+        );
+    }
+    if (dto.CARGO_ID) {
+      const position = await this.positionRepository.findOne({
+        where: { ID: dto.CARGO_ID },
+      });
+      if (!position)
+        throw new NotFoundException(
+          `Cargo com o ID ${dto.CARGO_ID} não encontrado`,
+        );
+    }
+    if (dto.GESTOR_ID) {
+      const manager = await this.employeeRepository.findOne({
+        where: { ID: dto.GESTOR_ID },
+      });
+      if (!manager)
+        throw new NotFoundException(
+          `Gestor com ID ${dto.GESTOR_ID} não encontrado`,
+        );
+    }
+
     const employee = this.employeeRepository.create({
       MATRICULA: dto.MATRICULA,
       NOME: dto.NOME,
@@ -59,7 +91,15 @@ export class EmployeesService {
       ...(dto.GESTOR_ID ? { GESTOR: { ID: dto.GESTOR_ID } as Employee } : {}),
     });
 
-    const saved = await this.employeeRepository.save(employee);
+    let saved: Employee;
+    try {
+      saved = await this.employeeRepository.save(employee);
+    } catch (err) {
+      if (err instanceof QueryFailedError && (err as any).code === '23505') {
+        throw new ConflictException('Já existe um funcionário com esses dados');
+      }
+      throw err;
+    }
     this.logger.log(`Funcionário ${saved.ID} criado por ${createdBy}`);
     return saved;
   }
@@ -91,8 +131,48 @@ export class EmployeesService {
   ): Promise<Employee> {
     const employee = await this.findOne(id);
 
+    if (dto.DEPARTAMENTO_ID) {
+      const dept = await this.departmentRepository.findOne({
+        where: { ID: dto.DEPARTAMENTO_ID },
+      });
+      if (!dept)
+        throw new NotFoundException(
+          `Departamento com ID ${dto.DEPARTAMENTO_ID} não encontrado`,
+        );
+    }
+    if (dto.CARGO_ID) {
+      const position = await this.positionRepository.findOne({
+        where: { ID: dto.CARGO_ID },
+      });
+      if (!position)
+        throw new NotFoundException(
+          `Cargo com ID ${dto.CARGO_ID} não encontrado`,
+        );
+    }
+    if (dto.GESTOR_ID) {
+      const manager = await this.employeeRepository.findOne({
+        where: { ID: dto.GESTOR_ID },
+      });
+      if (!manager)
+        throw new NotFoundException(
+          `Gestor com ID ${dto.GESTOR_ID} não encontrado`,
+        );
+    }
+
     Object.assign(employee, {
-      ...dto,
+      ...(dto.MATRICULA !== undefined && { MATRICULA: dto.MATRICULA }),
+      ...(dto.NOME !== undefined && { NOME: dto.NOME }),
+      ...(dto.CPF !== undefined && { CPF: dto.CPF }),
+      ...(dto.RG !== undefined && { RG: dto.RG }),
+      ...(dto.EMAIL !== undefined && { EMAIL: dto.EMAIL }),
+      ...(dto.TELEFONE !== undefined && { TELEFONE: dto.TELEFONE }),
+      ...(dto.STATUS !== undefined && { STATUS: dto.STATUS }),
+      ...(dto.DATA_NASCIMENTO !== undefined && {
+        DATA_NASCIMENTO: new Date(dto.DATA_NASCIMENTO),
+      }),
+      ...(dto.DATA_ADMISSAO !== undefined && {
+        DATA_ADMISSAO: new Date(dto.DATA_ADMISSAO),
+      }),
       DEPARTAMENTO: dto.DEPARTAMENTO_ID
         ? ({ ID: dto.DEPARTAMENTO_ID } as Department)
         : employee.DEPARTAMENTO,
@@ -103,7 +183,17 @@ export class EmployeesService {
       ATUALIZADO_POR: updatedBy,
     });
 
-    const saved = await this.employeeRepository.save(employee);
+    let saved: Employee;
+    try {
+      saved = await this.employeeRepository.save(employee);
+    } catch (err) {
+      if (err instanceof QueryFailedError && (err as any).code === '23505') {
+        throw new ConflictException(
+          'Matrícula, CPF ou e-mail já cadastrado em outro funcionário',
+        );
+      }
+      throw err;
+    }
     this.logger.log(`Funcionário ${id} atualizado por ${updatedBy}`);
     return saved;
   }

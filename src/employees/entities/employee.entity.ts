@@ -61,6 +61,7 @@ export class Employee extends BaseEntity {
   @Column({
     name: 'DATA_ADMISSAO',
     type: 'date',
+    nullable: true,
   })
   DATA_ADMISSAO: Date | null;
 

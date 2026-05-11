@@ -18,6 +18,9 @@ export class EmployeeDataDto {
   @ApiProperty({ example: 'a3bb189e-8bf9-3888-9912-ace4e6543002' })
   ID: string;
 
+  @ApiProperty({ example: '2025001' })
+  MATRICULA: string;
+
   @ApiProperty({ example: 'JOAO DA SILVA' })
   NOME: string;
 
