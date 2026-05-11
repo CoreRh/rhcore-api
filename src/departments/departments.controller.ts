@@ -69,7 +69,7 @@ export class DepartmentsController {
   })
   @ApiResponse({
     status: 409,
-    description: 'Já existe um departamento com essa matrícula, CPF ou e-mail.',
+    description: 'Já existe um departamento com esse nome ou sigla.',
     type: ConflictResponseDto,
   })
   @ApiResponse({
