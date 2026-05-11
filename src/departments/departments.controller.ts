@@ -54,12 +54,12 @@ export class DepartmentsController {
   })
   @ApiResponse({
     status: 201,
-    description: 'Funcionário criado com sucesso.',
+    description: 'Departamento criado com sucesso.',
     type: DepartmentResponseDto,
   })
   @ApiResponse({
     status: 400,
-    description: 'Dados inválidos',
+    description: 'Dados inválidos.',
     type: BadRequestResponseDto,
   })
   @ApiResponse({
@@ -69,7 +69,7 @@ export class DepartmentsController {
   })
   @ApiResponse({
     status: 409,
-    description: 'Já existe um funcionário com essa matrícula, CPF ou e-mail.',
+    description: 'Já existe um departamento com essa matrícula, CPF ou e-mail.',
     type: ConflictResponseDto,
   })
   @ApiResponse({
@@ -95,7 +95,7 @@ export class DepartmentsController {
   @Get()
   @ApiOperation({
     summary: 'Listar departamentos',
-    description: 'Endpoint responsável por listar todos os funcionários.',
+    description: 'Endpoint responsável por listar todos os departamentos.',
   })
   @ApiResponse({
     status: 200,
@@ -140,7 +140,7 @@ export class DepartmentsController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Funcionário não encontrado.',
+    description: 'Departamento não encontrado.',
     type: NotFoundResponseDto,
   })
   async findOne(
@@ -165,7 +165,7 @@ export class DepartmentsController {
   @ApiParam({
     name: 'id',
     type: 'string',
-    description: 'ID do funcionário',
+    description: 'ID do departamento',
     example: 'a3bb189e-8bf9-3888-9912-ace4e6543002',
   })
   @ApiResponse({
@@ -175,12 +175,12 @@ export class DepartmentsController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Dados inválidos',
+    description: 'Dados inválidos.',
     type: BadRequestResponseDto,
   })
   @ApiResponse({
     status: 401,
-    description: 'Token de sessão não encontrado ou sessão inválida/expirada',
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
@@ -190,12 +190,12 @@ export class DepartmentsController {
   })
   @ApiResponse({
     status: 403,
-    description: 'Sem permissão para realizar essa ação',
+    description: 'Sem permissão para realizar esta ação.',
     type: ForbiddenResponseDto,
   })
   @ApiResponse({
     status: 409,
-    description: 'Já existe um departamento com esse ID',
+    description: 'Já existe um departamento com esse nome ou sigla.',
     type: ConflictResponseDto,
   })
   async update(
@@ -220,6 +220,7 @@ export class DepartmentsController {
   @RequirePermissions(UserPermission.MANAGE_DEPARTMENTS)
   @ApiOperation({
     summary: 'Remover departamento',
+    description: 'Endpoint responsável por remover um departamento.',
   })
   @ApiParam({
     name: 'id',
@@ -239,7 +240,7 @@ export class DepartmentsController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Departamento não encontrado',
+    description: 'Departamento não encontrado.',
     type: NotFoundResponseDto,
   })
   @ApiResponse({
