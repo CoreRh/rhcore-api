@@ -21,7 +21,10 @@ describe('DELETE /departments/:id', () => {
   });
 
   it('deve remover um departamento com sucesso (200)', async () => {
-    const created = await createDepartment({ NOME: 'Compras', SIGLA: 'CMP' });
+    const created = await createDepartment({
+      NOME: 'Compras',
+      SIGLA: 'TEST_CMP',
+    });
     const id = created.body.data!.ID;
 
     const response = await deleteDepartment(id);
@@ -48,7 +51,10 @@ describe('DELETE /departments/:id', () => {
   });
 
   it('deve retornar 403 quando usuário EMPLOYEE tenta remover', async () => {
-    const created = await createDepartment({ NOME: 'Operações', SIGLA: 'OPS' });
+    const created = await createDepartment({
+      NOME: 'Operações',
+      SIGLA: 'TEST_OPS',
+    });
     const id = created.body.data!.ID;
     const employeeToken = await AuthHelper.createSessionAs(
       AppDataSource,

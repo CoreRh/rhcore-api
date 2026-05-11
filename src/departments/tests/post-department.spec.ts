@@ -22,21 +22,21 @@ describe('POST /departments', () => {
   it('deve criar um departamento com sucesso (201)', async () => {
     const { status, body } = await createDepartment({
       NOME: 'Recursos Humanos',
-      SIGLA: 'RH',
+      SIGLA: 'TEST_RH',
     });
 
     expect(status).toBe(201);
     expect(body.succeeded).toBe(true);
     expect(body.data?.NOME).toBe('Recursos Humanos');
-    expect(body.data?.SIGLA).toBe('RH');
+    expect(body.data?.SIGLA).toBe('TEST_RH');
     expect(body.message).toBe('Departamento criado com sucesso.');
   });
 
   it('deve retornar 409 quando NOME já existe', async () => {
-    await createDepartment({ NOME: 'Financeiro', SIGLA: 'FIN' });
+    await createDepartment({ NOME: 'Financeiro', SIGLA: 'TEST_FIN' });
     const { status, body } = await createDepartment({
       NOME: 'Financeiro',
-      SIGLA: 'FIN2',
+      SIGLA: 'TEST_FIN2',
     });
 
     expect(status).toBe(409);
@@ -44,10 +44,10 @@ describe('POST /departments', () => {
   });
 
   it('deve retornar 409 quando a SIGLA já existe', async () => {
-    await createDepartment({ NOME: 'Marketing', SIGLA: 'MKT' });
+    await createDepartment({ NOME: 'Marketing', SIGLA: 'TEST_MKT' });
     const { status, body } = await createDepartment({
       NOME: 'Marketing 2',
-      SIGLA: 'MKT',
+      SIGLA: 'TEST_MKT',
     });
 
     expect(status).toBe(409);
@@ -55,7 +55,10 @@ describe('POST /departments', () => {
   });
 
   it('deve retornar 400 quando NOME está vazio', async () => {
-    const { status, body } = await createDepartment({ NOME: '', SIGLA: 'TST' });
+    const { status, body } = await createDepartment({
+      NOME: '',
+      SIGLA: 'TEST_TST',
+    });
     expect(status).toBe(400);
     expect(body.succeeded).toBe(false);
   });
@@ -72,7 +75,7 @@ describe('POST /departments', () => {
   it('deve retornar 404 quando DEPARTAMENTO_PAI_ID não existe', async () => {
     const { status, body } = await createDepartment({
       NOME: 'Jurídico',
-      SIGLA: 'JUR',
+      SIGLA: 'TEST_JUR',
       DEPARTAMENTO_PAI_ID: '00000000-0000-4000-a000-000000000000',
     });
     expect(status).toBe(404);
@@ -82,11 +85,11 @@ describe('POST /departments', () => {
   it('deve retornar 403 quando usuário EMPLOYEE tenta criar', async () => {
     const employeeToken = await AuthHelper.createSessionAs(
       AppDataSource,
-      'employee-sem-permisssao',
+      'employee-sem-permissao',
       UserRole.EMPLOYEE,
     );
     const { status, body } = await createDepartment(
-      { NOME: 'Tentativa', SIGLA: 'TNT' },
+      { NOME: 'Tentativa', SIGLA: 'TEST_TNT' },
       true,
       employeeToken,
     );
@@ -96,7 +99,7 @@ describe('POST /departments', () => {
 
   it('deve retornar 401 quando não autenticado', async () => {
     const { status, body } = await createDepartment(
-      { NOME: 'Sem Auth', SIGLA: 'SA' },
+      { NOME: 'Sem Auth', SIGLA: 'TEST_SA' },
       false,
     );
 

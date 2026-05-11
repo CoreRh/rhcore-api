@@ -24,9 +24,12 @@ export class DepartmentDataDto {
   @ApiPropertyOptional({ example: '2026-01-01T00:00:00.000Z' })
   ATUALIZADO_EM: Date | null;
 
+  @ApiProperty({ example: 'admin' })
+  ATUALIZADO_POR: string | null;
+
   @ApiProperty({
     enum: BaseEntityStatusEnum,
-    example: BaseEntityStatusEnum.EXCLUIDO,
+    example: BaseEntityStatusEnum.ATIVO,
   })
   STATUS: BaseEntityStatusEnum;
 

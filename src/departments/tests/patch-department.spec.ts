@@ -21,14 +21,17 @@ describe('PATCH /departments/:id', () => {
   });
 
   it('deve atualizar um departamento com sucesso (200)', async () => {
-    const created = await createDepartment({ NOME: 'Vendas', SIGLA: 'VND' });
+    const created = await createDepartment({
+      NOME: 'Vendas',
+      SIGLA: 'TEST_VND',
+    });
     const id = created.body.data!.ID;
 
     const response = await updateDepartment(id, { NOME: 'Vendas Atualizado' });
     expect(response.status).toBe(200);
     expect(response.body.succeeded).toBe(true);
     expect(response.body.data?.NOME).toBe('Vendas Atualizado');
-    expect(response.body.message).toBe('Departamento atualizado com sucesso');
+    expect(response.body.message).toBe('Departamento atualizado com sucesso.');
   });
 
   it('deve retornar 404 quando departamento não existe', async () => {
@@ -51,8 +54,11 @@ describe('PATCH /departments/:id', () => {
   });
 
   it('deve retornar 409 ao atualizar para NOME já existente', async () => {
-    await createDepartment({ NOME: 'Financeiro', SIGLA: 'FIN' });
-    const second = await createDepartment({ NOME: 'Marketing', SIGLA: 'MKT' });
+    await createDepartment({ NOME: 'Financeiro', SIGLA: 'TEST_FIN' });
+    const second = await createDepartment({
+      NOME: 'Marketing',
+      SIGLA: 'TEST_MKT',
+    });
     const id = second.body.data!.ID;
 
     const response = await updateDepartment(id, { NOME: 'Financeiro' });
@@ -60,8 +66,25 @@ describe('PATCH /departments/:id', () => {
     expect(response.body.succeeded).toBe(false);
   });
 
+  it('deve retornar 404 quando DEPARTAMENTO_PAI_ID não existe', async () => {
+    const created = await createDepartment({
+      NOME: 'Compras',
+      SIGLA: 'TEST_CMP',
+    });
+    const id = created.body.data!.ID;
+
+    const response = await updateDepartment(id, {
+      DEPARTAMENTO_PAI_ID: '00000000-0000-4000-a000-000000000000',
+    });
+    expect(response.status).toBe(404);
+    expect(response.body.succeeded).toBe(false);
+  });
+
   it('deve retornar 403 quando usuário EMPLOYEE tenta atualizar', async () => {
-    const created = await createDepartment({ NOME: 'Operações', SIGLA: 'OPS' });
+    const created = await createDepartment({
+      NOME: 'Operações',
+      SIGLA: 'TEST_OPS',
+    });
     const id = created.body.data!.ID;
     const employeeToken = await AuthHelper.createSessionAs(
       AppDataSource,

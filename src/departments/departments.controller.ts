@@ -26,6 +26,7 @@ import {
 import {
   BadRequestResponseDto,
   ConflictResponseDto,
+  ForbiddenResponseDto,
   NotFoundResponseDto,
   UnauthorizedResponseDto,
 } from 'src/common/dto/error-response.dto';
@@ -51,6 +52,7 @@ export class DepartmentsController {
   @ApiResponse({ status: 400, type: BadRequestResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   @ApiResponse({ status: 409, type: ConflictResponseDto })
+  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
   async create(
     @Body() dto: CreateDepartmentDto,
     @Req() req: AuthenticatedRequest,
@@ -111,6 +113,8 @@ export class DepartmentsController {
   @ApiResponse({ status: 400, type: BadRequestResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
+  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
+  @ApiResponse({ status: 409, type: ConflictResponseDto })
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateDepartmentDto,
@@ -124,7 +128,7 @@ export class DepartmentsController {
     return {
       succeeded: true,
       data: department,
-      message: 'Departamento atualizado com sucesso',
+      message: 'Departamento atualizado com sucesso.',
     };
   }
 
@@ -140,6 +144,7 @@ export class DepartmentsController {
   @ApiResponse({ status: 200, type: SuccessMessageResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
   @ApiResponse({ status: 404, type: NotFoundResponseDto })
+  @ApiResponse({ status: 403, type: ForbiddenResponseDto })
   async remove(
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,

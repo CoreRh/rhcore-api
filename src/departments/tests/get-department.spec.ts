@@ -20,7 +20,7 @@ describe('GET /departments', () => {
   });
 
   it('deve listar departamentos com sucesso (200)', async () => {
-    await createDepartment({ NOME: 'Operações', SIGLA: 'OPS' });
+    await createDepartment({ NOME: 'Operações', SIGLA: 'TEST_OPS' });
 
     const { status, body } = await getAllDepartments();
 

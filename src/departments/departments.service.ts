@@ -34,12 +34,6 @@ export class DepartmentsService {
       throw new ConflictException('Já existe um departamento com essa sigla');
     }
 
-    if (existing) {
-      throw new ConflictException(
-        'Já existe um departamento com esse nome ou sigla',
-      );
-    }
-
     if (dto.DEPARTAMENTO_PAI_ID) {
       const parent = await this.departmentRepository.findOne({
         where: { ID: dto.DEPARTAMENTO_PAI_ID },
