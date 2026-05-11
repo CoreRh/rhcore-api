@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -6,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Department } from './entities/department.entity';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 
@@ -28,9 +29,25 @@ export class DepartmentsService {
     });
 
     if (existing) {
+      if (existing.NOME === dto.NOME)
+        throw new ConflictException('Já existe um departamento com esse nome');
+      throw new ConflictException('Já existe um departamento com essa sigla');
+    }
+
+    if (existing) {
       throw new ConflictException(
         'Já existe um departamento com esse nome ou sigla',
       );
+    }
+
+    if (dto.DEPARTAMENTO_PAI_ID) {
+      const parent = await this.departmentRepository.findOne({
+        where: { ID: dto.DEPARTAMENTO_PAI_ID },
+      });
+      if (!parent)
+        throw new NotFoundException(
+          `Departamento pai com ID ${dto.DEPARTAMENTO_PAI_ID} não encontrado`,
+        );
     }
 
     const department = this.departmentRepository.create({
@@ -43,7 +60,20 @@ export class DepartmentsService {
         : {}),
     });
 
-    const saved = await this.departmentRepository.save(department);
+    let saved: Department;
+    try {
+      saved = await this.departmentRepository.save(department);
+    } catch (err) {
+      if (
+        err instanceof QueryFailedError &&
+        (err.driverError as { code?: string }).code === '23505'
+      ) {
+        throw new ConflictException(
+          'Já existe um departamento com esse nome ou sigla',
+        );
+      }
+      throw err;
+    }
     this.logger.log(`Departamento ${saved.ID} criado por ${createdBy}`);
     return saved;
   }
@@ -75,15 +105,58 @@ export class DepartmentsService {
   ): Promise<Department> {
     const department = await this.findOne(id);
 
+    if (dto.NOME !== undefined || dto.SIGLA !== undefined) {
+      const conflicting = await this.departmentRepository.findOne({
+        where: [
+          ...(dto.NOME !== undefined ? [{ NOME: dto.NOME }] : []),
+          ...(dto.SIGLA !== undefined ? [{ SIGLA: dto.SIGLA }] : []),
+        ],
+      });
+      if (conflicting && conflicting.ID !== id) {
+        if (dto.NOME !== undefined && conflicting.NOME === dto.NOME)
+          throw new ConflictException(
+            'Já existe um departamento com esse nome',
+          );
+        throw new ConflictException('Já existe um departamento com essa sigla');
+      }
+    }
+
+    if (dto.DEPARTAMENTO_PAI_ID) {
+      if (dto.DEPARTAMENTO_PAI_ID === id)
+        throw new BadRequestException(
+          'Um departamento não pode ser seu próprio pai',
+        );
+      const parent = await this.departmentRepository.findOne({
+        where: { ID: dto.DEPARTAMENTO_PAI_ID },
+      });
+      if (!parent)
+        throw new NotFoundException(
+          `Departamento pai com ID ${dto.DEPARTAMENTO_PAI_ID} não encontrado`,
+        );
+    }
+
     Object.assign(department, {
-      ...dto,
-      DEPARTAMENTO_PAI_ID: dto.DEPARTAMENTO_PAI_ID
+      ...(dto.NOME !== undefined && { NOME: dto.NOME }),
+      ...(dto.SIGLA !== undefined && { SIGLA: dto.SIGLA }),
+      ...(dto.DESCRICAO !== undefined && { DESCRICAO: dto.DESCRICAO }),
+      ...(dto.STATUS !== undefined && { STATUS: dto.STATUS }),
+      DEPARTAMENTO_PAI: dto.DEPARTAMENTO_PAI_ID
         ? ({ ID: dto.DEPARTAMENTO_PAI_ID } as Department)
         : department.DEPARTAMENTO_PAI,
       ATUALIZADO_POR: updatedBy,
     });
 
-    const saved = await this.departmentRepository.save(department);
+    let saved: Department;
+    try {
+      saved = await this.departmentRepository.save(department);
+    } catch (err) {
+      if (err instanceof QueryFailedError && (err as any).code === '23505') {
+        throw new ConflictException(
+          'Nome ou sigla já cadastrado em outro departamento',
+        );
+      }
+      throw err;
+    }
     this.logger.log(`Departamento ${id} atualizado por ${updatedBy}`);
     return saved;
   }
