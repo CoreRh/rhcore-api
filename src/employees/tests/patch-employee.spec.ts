@@ -94,7 +94,7 @@ describe('PATCH /employees/:id', () => {
     const id = created.body.data!.ID;
 
     const response = await updateEmployee(id, {
-      DEPARTAMENTO_ID: '00000000-0000-0000-0000-000000000000',
+      DEPARTAMENTO_ID: '00000000-0000-4000-a000-000000000000',
     });
     expect(response.status).toBe(404);
     expect(response.body.succeeded).toBe(false);
@@ -109,7 +109,7 @@ describe('PATCH /employees/:id', () => {
     const id = created.body.data!.ID;
 
     const response = await updateEmployee(id, {
-      CARGO_ID: '00000000-0000-0000-0000-000000000000',
+      CARGO_ID: '00000000-0000-4000-a000-000000000000',
     });
     expect(response.status).toBe(404);
     expect(response.body.succeeded).toBe(false);

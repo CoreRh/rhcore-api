@@ -88,7 +88,7 @@ describe('POST /employees', () => {
       MATRICULA: '2025010',
       CPF: '010.010.010-10',
       EMAIL: 'dept@test.com',
-      DEPARTAMENTO_ID: '00000000-0000-0000-0000-000000000000',
+      DEPARTAMENTO_ID: '00000000-0000-4000-a000-000000000000',
     });
     expect(status).toBe(404);
     expect(body.succeeded).toBe(false);
@@ -99,7 +99,7 @@ describe('POST /employees', () => {
       MATRICULA: '2025011',
       CPF: '011.011.011-11',
       EMAIL: 'cargo@test.com',
-      CARGO_ID: '00000000-0000-0000-0000-000000000000',
+      CARGO_ID: '00000000-0000-4000-a000-000000000000',
     });
     expect(status).toBe(404);
     expect(body.succeeded).toBe(false);
@@ -110,7 +110,7 @@ describe('POST /employees', () => {
       MATRICULA: '2025012',
       CPF: '012.012.012-12',
       EMAIL: 'gestor@test.com',
-      GESTOR_ID: '00000000-0000-0000-0000-000000000000',
+      GESTOR_ID: '00000000-0000-4000-a000-000000000000',
     });
     expect(status).toBe(404);
     expect(body.succeeded).toBe(false);
