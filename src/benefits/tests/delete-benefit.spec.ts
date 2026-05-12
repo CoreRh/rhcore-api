@@ -2,12 +2,11 @@ import { AppDataSource } from 'src/config/database/data-source';
 import {
   cleanupAll,
   createBenefit,
+  deleteBenefit,
   initTestDataSource,
   setupDefaultEmployee,
 } from './helpers/benefit.helper';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
-
-const BASE_URL = 'http://localhost:3001';
 
 describe('DELETE /benefits/:id', () => {
   beforeAll(async () => {
@@ -26,48 +25,29 @@ describe('DELETE /benefits/:id', () => {
     const created = await createBenefit();
     const id = created.body.data!.ID;
 
-    const response = await fetch(`${BASE_URL}/benefits/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        ...AuthHelper.getAuthHeader(),
-      },
-    });
+    const { status, body } = await deleteBenefit(id);
 
-    const body = await response.json();
-    expect(response.status).toBe(200);
+    expect(status).toBe(200);
     expect(body.succeeded).toBe(true);
     expect(body.message).toBe('Benefício removido com sucesso.');
   });
 
   it('deve retornar 404 quando benefício não existe', async () => {
-    const response = await fetch(
-      `${BASE_URL}/benefits/00000000-0000-0000-0000-000000000000`,
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...AuthHelper.getAuthHeader(),
-        },
-      },
+    const { status, body } = await deleteBenefit(
+      '00000000-0000-0000-0000-000000000000',
     );
 
-    const body = await response.json();
-    expect(response.status).toBe(404);
+    expect(status).toBe(404);
     expect(body.succeeded).toBe(false);
   });
 
   it('deve retornar 401 quando não autenticado', async () => {
-    const response = await fetch(
-      `${BASE_URL}/benefits/00000000-0000-0000-0000-000000000000`,
-      {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      },
+    const { status, body } = await deleteBenefit(
+      '00000000-0000-0000-0000-000000000000',
+      false,
     );
 
-    const body = await response.json();
-    expect(response.status).toBe(401);
+    expect(status).toBe(401);
     expect(body.succeeded).toBe(false);
   });
 });

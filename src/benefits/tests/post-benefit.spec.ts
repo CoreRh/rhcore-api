@@ -42,22 +42,14 @@ describe('POST /benefits', () => {
   });
 
   it('deve retornar 400 quando TIPO é inválido', async () => {
-    const response = await fetch('http://localhost:3001/benefits', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...AuthHelper.getAuthHeader(),
-      },
-      body: JSON.stringify({
-        FUNCIONARIO_ID: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
-        TIPO: 'TIPO_INVALIDO',
-        VALOR: 500,
-        DATA_INICIO: '2025-01-01',
-      }),
+    const { status, body } = await createBenefit({
+      FUNCIONARIO_ID: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+      TIPO: 'TIPO_INVALIDO' as BeneficioTipoEnum,
+      VALOR: 500,
+      DATA_INICIO: '2025-01-01',
     });
 
-    const body = await response.json();
-    expect(response.status).toBe(400);
+    expect(status).toBe(400);
     expect(body.succeeded).toBe(false);
   });
 

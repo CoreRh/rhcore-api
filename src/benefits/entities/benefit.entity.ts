@@ -5,6 +5,11 @@ import { BeneficioStatusEnum } from '../enums/beneficio-status.enum';
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { BenefitMetadata } from '../types/benefit-metadata.types';
 
+const decimalTransformer = {
+  to: (value: number) => value,
+  from: (value: string) => parseFloat(value),
+};
+
 @Entity('BENEFICIOS')
 export class Benefit extends BaseEntity {
   @ManyToOne(() => Employee)
@@ -31,6 +36,7 @@ export class Benefit extends BaseEntity {
     type: 'numeric',
     precision: 10,
     scale: 2,
+    transformer: decimalTransformer,
   })
   VALOR: number;
 

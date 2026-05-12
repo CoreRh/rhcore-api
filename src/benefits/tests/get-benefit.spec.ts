@@ -33,13 +33,9 @@ describe('GET /benefits', () => {
   });
 
   it('deve retornar 401 quando não for autenticado', async () => {
-    const response = await fetch('http://localhost:3001/benefits', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const { status, body } = await getAllBenefits(false);
 
-    const body = await response.json();
-    expect(response.status).toBe(401);
+    expect(status).toBe(401);
     expect(body.succeeded).toBe(false);
   });
 });
