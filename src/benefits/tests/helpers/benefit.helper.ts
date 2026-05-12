@@ -178,12 +178,17 @@ export async function updateBenefit(
     STATUS_BENEFICIO: BeneficioStatusEnum;
   }>,
   authenticated = true,
+  token?: string,
 ): Promise<{ status: number; ok: boolean; body: ApiResponse<BenefitData> }> {
   const response = await fetch(`${BASE_URL}${BENEFITS_ENDPOINT}/${id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
+      ...(token
+        ? { Authorization: `Bearer ${token}` }
+        : authenticated
+          ? AuthHelper.getAuthHeader()
+          : {}),
     },
     body: JSON.stringify(body),
   });
@@ -218,7 +223,7 @@ export async function deleteBenefit(
 export async function cleanupAll() {
   if (!dataSource) throw new Error('Data source não iniciado');
   await dataSource.query(
-    'DELETE FROM "BENEFICIOS" WHERE "FUNCIONARIO_ID" IN (SELECT "ID" FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1',
+    'DELETE FROM "BENEFICIOS" WHERE "FUNCIONARIO_ID" IN (SELECT "ID" FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1)',
     ['2025001'],
   );
   await dataSource.query('DELETE FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1', [

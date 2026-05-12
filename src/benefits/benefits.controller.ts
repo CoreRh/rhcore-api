@@ -25,6 +25,7 @@ import {
 } from './dto/benefit-response.dto';
 import {
   BadRequestResponseDto,
+  ForbiddenResponseDto,
   NotFoundResponseDto,
   UnauthorizedResponseDto,
 } from 'src/common/dto/error-response.dto';
@@ -65,6 +66,11 @@ export class BenefitsController {
     status: 401,
     description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
     type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para criar benefícios.',
+    type: ForbiddenResponseDto,
   })
   async create(
     @Body() dto: CreateBenefitDto,
@@ -208,12 +214,17 @@ export class BenefitsController {
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para atualizar benefícios.',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
     status: 404,
     description: 'Benefício não encontrado.',
     type: NotFoundResponseDto,
   })
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateBenefitDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<BenefitResponseDto> {
@@ -254,12 +265,17 @@ export class BenefitsController {
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para remover benefícios.',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
     status: 404,
     description: 'Benefício não encontrado.',
     type: NotFoundResponseDto,
   })
   async remove(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<SuccessMessageResponseDto> {
     await this.benefitsService.remove(id, req.user.username);
