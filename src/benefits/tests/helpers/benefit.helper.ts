@@ -48,8 +48,16 @@ export async function setupDefaultEmployee(): Promise<string> {
     }),
   });
 
-  const data = await response.json();
-  defaultEmployeeId = data.data.ID;
+  if (response.status === 409) {
+    const result = await dataSource.query(
+      'SELECT "ID" FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1',
+      ['2025001'],
+    );
+    defaultEmployeeId = result[0]?.ID;
+  } else {
+    const data = await response.json();
+    defaultEmployeeId = data.data.ID;
+  }
   return defaultEmployeeId;
 }
 
@@ -97,7 +105,7 @@ export async function createBenefit(
   };
 }
 
-export async function getAllBenefits(): Promise<{
+export async function getAllBenefits(authenticated = true): Promise<{
   status: number;
   ok: boolean;
   body: ApiResponse<BenefitData[]>;
@@ -106,7 +114,7 @@ export async function getAllBenefits(): Promise<{
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      ...AuthHelper.getAuthHeader(),
+      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
     },
   });
 
@@ -157,8 +165,63 @@ export async function getBenefitById(
   };
 }
 
+export async function updateBenefit(
+  id: string,
+  body: Partial<{
+    TIPO: BeneficioTipoEnum;
+    VALOR: number;
+    METADADOS: Record<string, unknown> | null;
+    DATA_INICIO: string;
+    DATA_FIM: string | null;
+    DESCRICAO: string;
+    OBSERVACAO: string;
+    STATUS_BENEFICIO: BeneficioStatusEnum;
+  }>,
+  authenticated = true,
+): Promise<{ status: number; ok: boolean; body: ApiResponse<BenefitData> }> {
+  const response = await fetch(`${BASE_URL}${BENEFITS_ENDPOINT}/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  const data = (await response.json()) as ApiResponse<BenefitData>;
+  return {
+    status: response.status,
+    ok: response.ok,
+    body: data,
+  };
+}
+
+export async function deleteBenefit(
+  id: string,
+  authenticated = true,
+): Promise<{ status: number; ok: boolean; body: ApiResponse<null> }> {
+  const response = await fetch(`${BASE_URL}${BENEFITS_ENDPOINT}/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
+    },
+  });
+
+  const data = (await response.json()) as ApiResponse<null>;
+  return {
+    status: response.status,
+    ok: response.ok,
+    body: data,
+  };
+}
+
 export async function cleanupAll() {
   if (!dataSource) throw new Error('Data source não iniciado');
-  await dataSource.query('TRUNCATE TABLE "BENEFICIOS" CASCADE');
-  await dataSource.query('TRUNCATE TABLE "FUNCIONARIOS" CASCADE');
+  await dataSource.query(
+    'DELETE FROM "BENEFICIOS" WHERE "FUNCIONARIO_ID" IN (SELECT "ID" FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1',
+    ['2025001'],
+  );
+  await dataSource.query('DELETE FROM "FUNCIONARIOS" WHERE "MATRICULA" = $1', [
+    '2025001',
+  ]);
 }

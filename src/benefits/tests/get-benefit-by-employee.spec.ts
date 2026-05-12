@@ -29,10 +29,9 @@ describe('GET /benefits/employee/:funcionarioId', () => {
   });
 
   it('deve listar benefícios do funcionário com sucesso (200)', async () => {
-    const createRes = await createBenefit();
+    await createBenefit();
     const { status, body } = await getBenefitsByEmployee(defaultEmployeeId);
 
-    console.log(createRes);
     expect(status).toBe(200);
     expect(body.succeeded).toBe(true);
     expect(Array.isArray(body.data)).toBe(true);
