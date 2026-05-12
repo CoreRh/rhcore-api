@@ -63,6 +63,10 @@ export class PlanoSaudeMetadadosDto {
   @IsEnum(PlanoTipoEnum, { message: 'Tipo de plano inválido' })
   TIPO_PLANO: PlanoTipoEnum;
 
+  @ApiProperty({ enum: CoberturaPlanoEnum })
+  @IsEnum(CoberturaPlanoEnum, { message: 'Cobertura inválida' })
+  COBERTURA: CoberturaPlanoEnum;
+
   @ApiProperty({ example: 30 })
   @IsNumber({}, { message: 'Percentual deve ser entre 0 e 100' })
   @Min(0, { message: 'Percentual deve ser entre 0 e 100' })

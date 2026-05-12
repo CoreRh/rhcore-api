@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Req,
@@ -24,6 +25,7 @@ import {
 } from './dto/benefit-response.dto';
 import {
   BadRequestResponseDto,
+  ForbiddenResponseDto,
   NotFoundResponseDto,
   UnauthorizedResponseDto,
 } from 'src/common/dto/error-response.dto';
@@ -31,6 +33,9 @@ import { CreateBenefitDto } from './dto/create-benefit.dto';
 import type { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 import { UpdateBenefitDto } from './dto/update-benefit.dto';
 import { SuccessMessageResponseDto } from 'src/common/dto/base-response.dto';
+import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
+import { RequirePermissions } from 'src/auth/decorators/permissions.decorator';
+import { UserPermission } from 'src/common/enums/user-permission.enum';
 
 @ApiTags('Benefícios')
 @ApiBearerAuth('JWT-auth')
@@ -40,6 +45,8 @@ export class BenefitsController {
   constructor(private readonly benefitsService: BenefitsService) {}
 
   @Post()
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.MANAGE_BENEFITS)
   @ApiOperation({
     summary: 'Criar benefício.',
     description:
@@ -59,6 +66,11 @@ export class BenefitsController {
     status: 401,
     description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
     type: UnauthorizedResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para criar benefícios.',
+    type: ForbiddenResponseDto,
   })
   async create(
     @Body() dto: CreateBenefitDto,
@@ -99,7 +111,7 @@ export class BenefitsController {
     };
   }
 
-  @Get('employee/:funcinarioId')
+  @Get('employee/:funcionarioId')
   @ApiOperation({
     summary: 'Listar benefícios por funcionário.',
     description:
@@ -119,11 +131,11 @@ export class BenefitsController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token de sessão não encontrado ou sessão.',
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
     type: UnauthorizedResponseDto,
   })
   async findByEmployee(
-    @Param('funcionarioId') funcionarioId: string,
+    @Param('funcionarioId', ParseUUIDPipe) funcionarioId: string,
   ): Promise<BenefitListResponseDto> {
     const benefits = await this.benefitsService.findByEmployee(funcionarioId);
     return {
@@ -161,7 +173,9 @@ export class BenefitsController {
     description: 'Benefício não encontrado.',
     type: NotFoundResponseDto,
   })
-  async findOne(@Param('id') id: string): Promise<BenefitResponseDto> {
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<BenefitResponseDto> {
     const benefit = await this.benefitsService.findOne(id);
     return {
       succeeded: true,
@@ -171,6 +185,8 @@ export class BenefitsController {
   }
 
   @Patch(':id')
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.MANAGE_BENEFITS)
   @ApiOperation({
     summary: 'Atualizar benefício',
     description: 'Enpoint responsável por atualizar os dados de um benefício.',
@@ -198,12 +214,17 @@ export class BenefitsController {
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para atualizar benefícios.',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
     status: 404,
     description: 'Benefício não encontrado.',
     type: NotFoundResponseDto,
   })
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateBenefitDto,
     @Req() req: AuthenticatedRequest,
   ): Promise<BenefitResponseDto> {
@@ -220,6 +241,8 @@ export class BenefitsController {
   }
 
   @Delete(':id')
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.MANAGE_BENEFITS)
   @ApiOperation({
     summary: 'Remover benefício.',
     description: 'Endpoint responsável por remover um benefício.',
@@ -242,12 +265,17 @@ export class BenefitsController {
     type: UnauthorizedResponseDto,
   })
   @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para remover benefícios.',
+    type: ForbiddenResponseDto,
+  })
+  @ApiResponse({
     status: 404,
     description: 'Benefício não encontrado.',
     type: NotFoundResponseDto,
   })
   async remove(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<SuccessMessageResponseDto> {
     await this.benefitsService.remove(id, req.user.username);

@@ -62,12 +62,12 @@ export class BenefitDataDto {
   @ApiProperty({ example: 'admin' })
   CRIADO_POR: string;
 
-  @ApiProperty({ example: '2026-0101T00:00:00.000Z' })
+  @ApiProperty({ example: '2026-01-01T00:00:00.000Z' })
   CRIADO_EM: Date;
 }
 
 export class BenefitResponseDto extends BaseSuccessResponseDto {
-  @ApiProperty({ type: [BenefitDataDto] })
+  @ApiProperty({ type: BenefitDataDto })
   data: BenefitDataDto;
 }
 

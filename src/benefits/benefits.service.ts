@@ -98,7 +98,7 @@ export class BenefitsService {
 
     if (
       user.role === UserRole.EMPLOYEE &&
-      !user.permissions.includes(UserPermission.APPROVE_VACATIONS) &&
+      !user.permissions.includes(UserPermission.MANAGE_BENEFITS) &&
       !user.permissions.includes(UserPermission.VIEW_ALL_EMPLOYEES)
     ) {
       query.andWhere('benefit.FUNCIONARIO_ID = :id', {

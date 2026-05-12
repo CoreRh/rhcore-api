@@ -4,10 +4,10 @@ import {
   createBenefit,
   initTestDataSource,
   setupDefaultEmployee,
+  updateBenefit,
 } from './helpers/benefit.helper';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
-
-const BASE_URL = 'http://localhost:3001';
+import { BeneficioStatusEnum } from '../enums/beneficio-status.enum';
 
 describe('PATCH /benefits/:id', () => {
   beforeAll(async () => {
@@ -26,21 +26,13 @@ describe('PATCH /benefits/:id', () => {
     const created = await createBenefit();
     const id = created.body.data!.ID;
 
-    const response = await fetch(`${BASE_URL}/benefits/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        ...AuthHelper.getAuthHeader(),
-      },
-      body: JSON.stringify({
-        VALOR: 600.0,
-        STATUS_BENEFICIO: 'INATIVO',
-        OBSERVACAO: 'Benefício suspenso temporariamente',
-      }),
+    const { status, body } = await updateBenefit(id, {
+      VALOR: 600.0,
+      STATUS_BENEFICIO: BeneficioStatusEnum.INATIVO,
+      OBSERVACAO: 'Benefício suspenso temporariamente',
     });
 
-    const body = await response.json();
-    expect(response.status).toBe(200);
+    expect(status).toBe(200);
     expect(body.succeeded).toBe(true);
     expect(body.data?.VALOR).toBe(600);
     expect(body.data?.STATUS_BENEFICIO).toBe('INATIVO');
@@ -51,50 +43,32 @@ describe('PATCH /benefits/:id', () => {
     const created = await createBenefit();
     const id = created.body.data!.ID;
 
-    const response = await fetch(`${BASE_URL}/benefits/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        ...AuthHelper.getAuthHeader(),
-      },
-      body: JSON.stringify({ STATUS_BENEFICIO: 'STATUS_INVALIDO' }),
+    const { status, body } = await updateBenefit(id, {
+      STATUS_BENEFICIO: 'STATUS_INVALIDO' as BeneficioStatusEnum,
     });
 
-    const body = await response.json();
-    expect(response.status).toBe(400);
+    expect(status).toBe(400);
     expect(body.succeeded).toBe(false);
   });
 
   it('deve retornar 404 quando benefício não existe', async () => {
-    const response = await fetch(
-      `${BASE_URL}/benefits/00000000-0000-0000-0000-000000000000`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...AuthHelper.getAuthHeader(),
-        },
-        body: JSON.stringify({ VALOR: 600 }),
-      },
+    const { status, body } = await updateBenefit(
+      '00000000-0000-0000-0000-000000000000',
+      { VALOR: 600 },
     );
 
-    const body = await response.json();
-    expect(response.status).toBe(404);
+    expect(status).toBe(404);
     expect(body.succeeded).toBe(false);
   });
 
   it('deve retornar 401 quando não autenticado', async () => {
-    const response = await fetch(
-      `${BASE_URL}/benefits/00000000-0000-0000-0000-000000000000`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ VALOR: 600 }),
-      },
+    const { status, body } = await updateBenefit(
+      '00000000-0000-0000-0000-000000000000',
+      { VALOR: 600 },
+      false,
     );
 
-    const body = await response.json();
-    expect(response.status).toBe(401);
+    expect(status).toBe(401);
     expect(body.succeeded).toBe(false);
   });
 });
