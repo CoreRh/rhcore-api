@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Req,
@@ -31,6 +32,9 @@ import { CreateBenefitDto } from './dto/create-benefit.dto';
 import type { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 import { UpdateBenefitDto } from './dto/update-benefit.dto';
 import { SuccessMessageResponseDto } from 'src/common/dto/base-response.dto';
+import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
+import { RequirePermissions } from 'src/auth/decorators/permissions.decorator';
+import { UserPermission } from 'src/common/enums/user-permission.enum';
 
 @ApiTags('Benefícios')
 @ApiBearerAuth('JWT-auth')
@@ -40,6 +44,8 @@ export class BenefitsController {
   constructor(private readonly benefitsService: BenefitsService) {}
 
   @Post()
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.MANAGE_BENEFITS)
   @ApiOperation({
     summary: 'Criar benefício.',
     description:
@@ -99,7 +105,7 @@ export class BenefitsController {
     };
   }
 
-  @Get('employee/:funcinarioId')
+  @Get('employee/:funcionarioId')
   @ApiOperation({
     summary: 'Listar benefícios por funcionário.',
     description:
@@ -119,11 +125,11 @@ export class BenefitsController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token de sessão não encontrado ou sessão.',
+    description: 'Token de sessão não encontrado ou sessão inválida/expirada.',
     type: UnauthorizedResponseDto,
   })
   async findByEmployee(
-    @Param('funcionarioId') funcionarioId: string,
+    @Param('funcionarioId', ParseUUIDPipe) funcionarioId: string,
   ): Promise<BenefitListResponseDto> {
     const benefits = await this.benefitsService.findByEmployee(funcionarioId);
     return {
@@ -161,7 +167,9 @@ export class BenefitsController {
     description: 'Benefício não encontrado.',
     type: NotFoundResponseDto,
   })
-  async findOne(@Param('id') id: string): Promise<BenefitResponseDto> {
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<BenefitResponseDto> {
     const benefit = await this.benefitsService.findOne(id);
     return {
       succeeded: true,
@@ -171,6 +179,8 @@ export class BenefitsController {
   }
 
   @Patch(':id')
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.MANAGE_BENEFITS)
   @ApiOperation({
     summary: 'Atualizar benefício',
     description: 'Enpoint responsável por atualizar os dados de um benefício.',
@@ -220,6 +230,8 @@ export class BenefitsController {
   }
 
   @Delete(':id')
+  @UseGuards(PermissionsGuard)
+  @RequirePermissions(UserPermission.MANAGE_BENEFITS)
   @ApiOperation({
     summary: 'Remover benefício.',
     description: 'Endpoint responsável por remover um benefício.',
