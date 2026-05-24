@@ -3,7 +3,7 @@ import { User } from '../../../users/entities/user.entity';
 import { DataSource } from 'typeorm';
 import type { ApiResponse } from '../../../common/tests/helpers/api-response.helper';
 
-export const BASE_URL = 'http://localhost:3001';
+export const BASE_URL = 'http://localhost:3001/api';
 const USERS_ENDPOINT = '/users';
 
 let dataSource: DataSource;
