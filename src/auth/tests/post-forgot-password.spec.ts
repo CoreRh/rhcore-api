@@ -1,7 +1,7 @@
 import { AppDataSource } from 'src/config/database/data-source';
 import { AuthHelper } from './helpers/auth.helper';
 
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = 'http://localhost:3001/api';
 
 describe('POST /auth/forgot-password', () => {
   beforeAll(async () => {

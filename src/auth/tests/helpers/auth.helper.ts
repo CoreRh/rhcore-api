@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserRole } from 'src/common/enums/user-role.enum';
 
-const TEST_BASE_URL = 'http://localhost:3001';
+const TEST_BASE_URL = 'http://localhost:3001/api';
 
 interface AuthResponse {
   succeeded: boolean;

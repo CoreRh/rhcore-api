@@ -3,7 +3,7 @@ import { ApiResponse } from 'src/common/tests/helpers/api-response.helper';
 import { UpdatePositionDto } from 'src/positions/dto/update-position.dto';
 import { DataSource } from 'typeorm';
 
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = 'http://localhost:3001/api';
 const POSITIONS_ENDPOINT = '/positions';
 
 let dataSource: DataSource = null!;

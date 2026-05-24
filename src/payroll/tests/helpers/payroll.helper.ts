@@ -3,7 +3,7 @@ import { ApiResponse } from 'src/common/tests/helpers/api-response.helper';
 import { PayrollStatusEnum } from 'src/payroll/enums/payroll-status.enum';
 import { DataSource } from 'typeorm';
 
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = 'http://localhost:3001/api';
 const PAYROLL_ENDPOINT = '/payroll';
 const EMPLOYEES_ENDPOINT = '/employees';
 
