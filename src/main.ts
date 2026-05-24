@@ -7,6 +7,8 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.setGlobalPrefix('api');
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useGlobalFilters(new HttpExceptionFilter());
 
@@ -91,7 +93,7 @@ async function bootstrap() {
     .swagger-ui .arrow { filter: invert(1); }
   `;
 
-  SwaggerModule.setup('api/docs', app, document, {
+  SwaggerModule.setup('docs', app, document, {
     customCss: darkModeCss,
     customSiteTitle: 'RHCore API Docs',
   });
