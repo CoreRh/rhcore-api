@@ -15,6 +15,7 @@ import { RequestsModule } from './requests/requests.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { PayrollModule } from './payroll/payroll.module';
 import { BenefitsModule } from './benefits/benefits.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -100,6 +101,7 @@ import { BenefitsModule } from './benefits/benefits.module';
     RequestsModule,
     PayrollModule,
     BenefitsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
