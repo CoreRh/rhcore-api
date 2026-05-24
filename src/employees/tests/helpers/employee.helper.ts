@@ -2,7 +2,7 @@ import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
 import { ApiResponse } from 'src/common/tests/helpers/api-response.helper';
 import { DataSource } from 'typeorm';
 
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = 'http://localhost:3001/api';
 const EMPLOYEES_ENDPOINT = '/employees';
 
 let dataSource: DataSource = null!;

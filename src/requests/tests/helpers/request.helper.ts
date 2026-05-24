@@ -4,7 +4,7 @@ import { RequestStatusEnum } from 'src/requests/enums/request-status.enum';
 import { RequestTypeEnum } from 'src/requests/enums/request-type.enum';
 import { DataSource } from 'typeorm';
 
-export const BASE_URL = 'http://localhost:3001';
+export const BASE_URL = 'http://localhost:3001/api';
 const REQUEST_ENDPOINT = '/requests';
 const EMPLOYEES_ENDPOINT = '/employees';
 

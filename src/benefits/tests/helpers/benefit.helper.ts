@@ -4,7 +4,7 @@ import { BeneficioTipoEnum } from 'src/benefits/enums/beneficio-tipo.enum';
 import { ApiResponse } from 'src/common/tests/helpers/api-response.helper';
 import { DataSource } from 'typeorm';
 
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = 'http://localhost:3001/api';
 const BENEFITS_ENDPOINT = '/benefits';
 const EMPLOYEES_ENDPOINT = '/employees';
 

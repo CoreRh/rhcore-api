@@ -7,7 +7,7 @@ import {
 } from './helpers/vacation.helper';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
 
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = 'http://localhost:3001/api';
 
 describe('DELETE /vacations/:id', () => {
   beforeAll(async () => {
