@@ -46,7 +46,7 @@ describe('GET /dashboard/activity', () => {
     expect(['FUNCIONARIO', 'FERIAS', 'SOLICITACAO']).toContain(item.TIPO);
   });
 
-  it('deve retornar ordenado or CRIADO_EM DESC', async () => {
+  it('deve retornar ordenado por CRIADO_EM DESC', async () => {
     await createEmployee();
     const { body } = await getActivity();
 
