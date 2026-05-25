@@ -1,0 +1,5 @@
+export enum ActivityTypeEnum {
+  FUNCIONARIO = 'FUNCIONARIO',
+  FERIAS = 'FERIAS',
+  SOLICITACAO = 'SOLICITACAO',
+}

@@ -5,6 +5,7 @@ import { Employee } from 'src/employees/entities/employee.entity';
 import { Vacation } from 'src/vacations/entities/vacation.entity';
 import { Request } from 'src/requests/entities/request.entity';
 import { ActivityDataDto } from './dto/activity-response.dto';
+import { ActivityTypeEnum } from './enums/activity.enum';
 
 const ACTIVITY_LIMIT = 10;
 
@@ -42,7 +43,7 @@ export class DashboardService {
     const activities: ActivityDataDto[] = [
       ...employees.map((e) => ({
         ID: e.ID,
-        TIPO: 'FUNCIONARIO' as const,
+        TIPO: ActivityTypeEnum.FUNCIONARIO,
         TITULO: e.NOME,
         DESCRICAO: 'Funcionário admitido',
         STATUS: e.STATUS,
@@ -62,7 +63,7 @@ export class DashboardService {
         ID: r.ID,
         TIPO: 'SOLICITACAO' as const,
         TITULO: r.FUNCIONARIO.NOME,
-        DESCRICAO: r.DESCRICAO,
+        DESCRICAO: `Solicitação de ${r.TIPO.toLowerCase()}`,
         STATUS: r.SITUACAO,
         CRIADO_EM: r.CRIADO_EM.toISOString(),
       })),
