@@ -6,6 +6,7 @@ import {
 } from './helpers/dashboard.helper';
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
 import { createEmployee } from 'src/employees/tests/helpers/employee.helper';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
 describe('GET /dashboard/activity', () => {
   beforeAll(async () => {
@@ -32,6 +33,7 @@ describe('GET /dashboard/activity', () => {
   });
 
   it('deve retornar atividades com os campos corretos', async () => {
+    await createEmployee();
     const { body } = await getActivity();
 
     const item = body.data![0];
@@ -45,6 +47,7 @@ describe('GET /dashboard/activity', () => {
   });
 
   it('deve retornar ordenado or CRIADO_EM DESC', async () => {
+    await createEmployee();
     const { body } = await getActivity();
 
     const datas = body.data!.map((a) => new Date(a.CRIADO_EM).getTime());
@@ -56,5 +59,16 @@ describe('GET /dashboard/activity', () => {
     const { status, body } = await getActivity(false);
     expect(status).toBe(401);
     expect(body.succeeded).toBe(false);
+  });
+
+  it('deve retornar 403 quando autenticado sem permissão VIEW_REPORTS', async () => {
+    const token = await AuthHelper.createSessionAs(
+      AppDataSource,
+      'employee-sem-permissao',
+      UserRole.EMPLOYEE,
+    );
+
+    const { status } = await getActivity(true, token);
+    expect(status).toBe(403);
   });
 });

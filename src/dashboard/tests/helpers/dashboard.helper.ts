@@ -1,5 +1,6 @@
 import { AuthHelper } from 'src/auth/tests/helpers/auth.helper';
 import { ApiResponse } from 'src/common/tests/helpers/api-response.helper';
+import { ActivityDataDto } from 'src/dashboard/dto/activity-response.dto';
 import { DataSource } from 'typeorm';
 
 const BASE_URL = 'http://localhost:3001/api';
@@ -7,33 +8,34 @@ const DASHBOARD_ENDPOINT = '/dashboard';
 
 let dataSource: DataSource = null!;
 
-export interface ActivityData {
-  ID: string;
-  TIPO: 'FUNCIONARIO' | 'FERIAS' | 'SOLICITACAO';
-  TITULO: string;
-  DESCRICAO: string;
-  STATUS: string | null;
-  CRIADO_EM: string;
-}
-
 export function initTestDataSource(ds: DataSource) {
   dataSource = ds;
 }
 
-export async function getActivity(authenticated = true): Promise<{
+export async function getActivity(
+  authenticated = true,
+  token?: string,
+): Promise<{
   status: number;
   ok: boolean;
-  body: ApiResponse<ActivityData[]>;
+  body: ApiResponse<ActivityDataDto[]>;
 }> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  } else if (authenticated) {
+    headers['Authorization'] = AuthHelper.getAuthHeader().Authorization;
+  }
+
   const response = await fetch(`${BASE_URL}${DASHBOARD_ENDPOINT}/activity`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(authenticated ? AuthHelper.getAuthHeader() : {}),
-    },
+    headers,
   });
 
-  const data = (await response.json()) as ApiResponse<ActivityData[]>;
+  const data = (await response.json()) as ApiResponse<ActivityDataDto[]>;
   return {
     status: response.status,
     ok: response.ok,
@@ -43,10 +45,20 @@ export async function getActivity(authenticated = true): Promise<{
 
 export async function cleanupAll() {
   if (!dataSource) throw new Error('Data source não iniciado');
-  await dataSource.query('TRUNCATE TABLE "SOLICITACOES" CASCADE');
-  await dataSource.query('TRUNCATE TABLE "FERIAS" CASCADE');
+  await dataSource.query(
+    'DELETE FROM "SOLICITACOES" WHERE "FUNCIONARIO_ID" IN (SELECT "ID" FROM "FUNCIONARIOS" WHERE "MATRICULA" LIKE $1)',
+    ['202%'],
+  );
+  await dataSource.query(
+    'DELETE FROM "FERIAS" WHERE "FUNCIONARIO_ID" IN (SELECT "ID" FROM "FUNCIONARIOS" WHERE "MATRICULA" LIKE $1)',
+    ['202%'],
+  );
+  await dataSource.query(
+    'DELETE FROM "FOLHA_PAGAMENTO" WHERE "FUNCIONARIO_ID" IN (SELECT "ID" FROM "FUNCIONARIOS" WHERE "MATRICULA" LIKE $1)',
+    ['202%'],
+  );
   await dataSource.query(
     'DELETE FROM "FUNCIONARIOS" WHERE "MATRICULA" LIKE $1',
-    ['2025%'],
+    ['202%'],
   );
 }
