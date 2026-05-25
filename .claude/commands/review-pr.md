@@ -147,3 +147,15 @@ Analise o diff no contexto do projeto. Se precisar de mais contexto sobre um arq
 - **Melhorias sugeridas:** [número]
 - **Esforço de correção:** 🟢 Baixo / 🟡 Médio / 🔴 Alto
 - **Prioridade:** 🟢 Opcional / 🟡 Recomendado / 🔴 Obrigatório
+
+---
+
+## 📋 MARKDOWN PARA COLAR NO GITHUB
+
+Após exibir o review acima, repita **todo o conteúdo do review** (do `## 📌 VISÃO GERAL DO PR` até o fim do `## 📊 RESUMO EXECUTIVO`) dentro de um único bloco de código com a linguagem `markdown`, assim:
+
+```markdown
+[conteúdo completo do review aqui]
+```
+
+Isso permite que o usuário copie o bloco e cole diretamente no campo de comentário do GitHub PR.
