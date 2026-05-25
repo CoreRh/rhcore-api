@@ -3,8 +3,7 @@ import { BaseSuccessResponseDto } from 'src/common/dto/base-response.dto';
 import { BaseEntityStatusEnum } from 'src/common/enums/base-entity-status.enum';
 import { RequestStatusEnum } from 'src/requests/enums/request-status.enum';
 import { VacationStatusEnum } from 'src/vacations/enums/vacation-status.enum';
-
-export type ActivityType = 'FUNCIONARIO' | 'FERIAS' | 'SOLICITACAO';
+import { ActivityTypeEnum } from '../enums/activity.enum';
 
 export class ActivityDataDto {
   @ApiProperty({ example: 'a3bb189e-8bf9-3888-9912-ace4e6543002' })
@@ -14,7 +13,7 @@ export class ActivityDataDto {
     enum: ['FUNCIONARIO', 'FERIAS', 'SOLICITACAO'],
     example: 'FUNCIONARIO',
   })
-  TIPO: ActivityType;
+  TIPO: ActivityTypeEnum;
 
   @ApiProperty({ example: 'João Silva' })
   TITULO: string;

@@ -11,8 +11,6 @@ const ACTIVITY_LIMIT = 10;
 
 @Injectable()
 export class DashboardService {
-  private readonly logger = new Logger(DashboardService.name);
-
   constructor(
     @InjectRepository(Employee)
     private readonly employeeRepository: Repository<Employee>,
@@ -51,7 +49,7 @@ export class DashboardService {
       })),
       ...vacations.map((v) => ({
         ID: v.ID,
-        TIPO: 'FERIAS' as const,
+        TIPO: ActivityTypeEnum.FERIAS,
         TITULO: v.FUNCIONARIO.NOME,
         DESCRICAO: `Férias de ${new Date(v.DATA_INICIO).toLocaleDateString(
           'pt-BR',
@@ -61,7 +59,7 @@ export class DashboardService {
       })),
       ...requests.map((r) => ({
         ID: r.ID,
-        TIPO: 'SOLICITACAO' as const,
+        TIPO: ActivityTypeEnum.SOLICITACAO,
         TITULO: r.FUNCIONARIO.NOME,
         DESCRICAO: `Solicitação de ${r.TIPO.toLowerCase()}`,
         STATUS: r.SITUACAO,
