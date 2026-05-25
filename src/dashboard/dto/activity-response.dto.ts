@@ -10,8 +10,8 @@ export class ActivityDataDto {
   ID: string;
 
   @ApiProperty({
-    enum: ['FUNCIONARIO', 'FERIAS', 'SOLICITACAO'],
-    example: 'FUNCIONARIO',
+    enum: ActivityTypeEnum,
+    example: ActivityTypeEnum.FUNCIONARIO,
   })
   TIPO: ActivityTypeEnum;
 
