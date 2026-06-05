@@ -60,12 +60,13 @@ import { DashboardModule } from './dashboard/dashboard.module';
       useFactory: (configService: ConfigService) => {
         const databaseUrl = configService.get<string>('DATABASE_URL');
         if (databaseUrl) {
+          const isInternal = databaseUrl.includes('railway.internal');
           return {
             type: 'postgres',
             url: databaseUrl,
             autoLoadEntities: true,
             synchronize: false,
-            ssl: { rejectUnauthorized: false },
+            ssl: isInternal ? false : { rejectUnauthorized: false },
           };
         }
         return {

@@ -13,7 +13,9 @@ export const AppDataSource = new DataSource(
         entities: [__dirname + '/../../**/*.entity.{ts,js}'],
         migrations: [__dirname + '/migrations/*.{ts,js}'],
         synchronize: false,
-        ssl: { rejectUnauthorized: false },
+        ssl: process.env.DATABASE_URL.includes('railway.internal')
+          ? false
+          : { rejectUnauthorized: false },
       }
     : {
         type: 'postgres',
