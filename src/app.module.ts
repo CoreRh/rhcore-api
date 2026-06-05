@@ -58,7 +58,16 @@ import { DashboardModule } from './dashboard/dashboard.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const isProduction = configService.get('NODE_ENV') === 'production';
+        const databaseUrl = configService.get<string>('DATABASE_URL');
+        if (databaseUrl) {
+          return {
+            type: 'postgres',
+            url: databaseUrl,
+            autoLoadEntities: true,
+            synchronize: false,
+            ssl: { rejectUnauthorized: false },
+          };
+        }
         return {
           type: 'postgres',
           host: configService.get<string>('DB_HOST'),
@@ -68,7 +77,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
           database: configService.get<string>('DB_NAME'),
           autoLoadEntities: true,
           synchronize: false,
-          ssl: isProduction ? { rejectUnauthorized: false } : false,
+          ssl: false,
         };
       },
     }),
