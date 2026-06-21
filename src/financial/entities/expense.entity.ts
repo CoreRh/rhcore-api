@@ -1,8 +1,9 @@
 import { Employee } from 'src/employees/entities/employee.entity';
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { ExpenseCategoryEnum } from '../enums/expense-category.enum';
 import { ExpenseStatusEnum } from '../enums/expense-status.enum';
 import { User } from 'src/users/entities/user.entity';
+import { BaseEntity } from 'src/common/entities/base.entity';
 
 const decimalTransformer = {
   to: (value: number) => value,

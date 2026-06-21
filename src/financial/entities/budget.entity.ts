@@ -1,6 +1,7 @@
 import { Department } from 'src/departments/entities/department.entity';
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BudgetCategoryEnum } from '../enums/budget-category.enum';
+import { BaseEntity } from 'src/common/entities/base.entity';
 
 const decimalTransformer = {
   to: (value: number) => value,
