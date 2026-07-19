@@ -1,18 +1,16 @@
 import { Employee } from 'src/employees/entities/employee.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { ExpenseCategoryEnum } from '../enums/expense-category.enum';
 import { ExpenseStatusEnum } from '../enums/expense-status.enum';
 import { User } from 'src/users/entities/user.entity';
 import { BaseEntity } from 'src/common/entities/base.entity';
-
-const decimalTransformer = {
-  to: (value: number) => value,
-  from: (value: string) => parseFloat(value),
-};
+import { decimalTransformer } from 'src/common/transformers/decimal.transformer';
 
 @Entity('DESPESAS')
+@Index(['STATUS_DESPESA'])
+@Index(['DATA_DESPESA'])
 export class Expense extends BaseEntity {
-  @ManyToOne(() => Employee, { eager: true })
+  @ManyToOne(() => Employee)
   @JoinColumn({ name: 'FUNCIONARIO_ID' })
   FUNCIONARIO: Employee;
 

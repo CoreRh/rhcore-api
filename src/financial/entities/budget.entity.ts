@@ -1,16 +1,14 @@
 import { Department } from 'src/departments/entities/department.entity';
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { BudgetCategoryEnum } from '../enums/budget-category.enum';
 import { BaseEntity } from 'src/common/entities/base.entity';
-
-const decimalTransformer = {
-  to: (value: number) => value,
-  from: (value: string) => parseFloat(value),
-};
+import { decimalTransformer } from 'src/common/transformers/decimal.transformer';
 
 @Entity('ORCAMENTOS')
+@Unique(['DEPARTAMENTO', 'ANO_REFERENCIA', 'MES_REFERENCIA', 'CATEGORIA'])
+@Index(['ANO_REFERENCIA', 'MES_REFERENCIA'])
 export class Budget extends BaseEntity {
-  @ManyToOne(() => Department, { eager: true })
+  @ManyToOne(() => Department)
   @JoinColumn({ name: 'DEPARTAMENTO_ID' })
   DEPARTAMENTO: Department;
 
