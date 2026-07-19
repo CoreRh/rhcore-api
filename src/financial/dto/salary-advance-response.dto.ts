@@ -23,7 +23,7 @@ export class SalaryAdvanceInstallmentDataDto {
   @ApiProperty({ enum: InstallmentStatusEnum })
   STATUS_PARCELA: InstallmentStatusEnum;
 
-  @ApiProperty({ example: 'a3bb189e-8bf9-3888-9912-ace4e6543002' })
+  @ApiPropertyOptional({ example: 'a3bb189e-8bf9-3888-9912-ace4e6543002' })
   FOLHA_PAGAMENTO_ID: string | null;
 }
 
@@ -54,6 +54,12 @@ export class SalaryAdvanceDataDto {
 
   @ApiPropertyOptional({ example: 'Aprovado' })
   OBSERVACAO: string | null;
+
+  @ApiProperty({ example: 'admin' })
+  CRIADO_POR: string;
+
+  @ApiProperty({ example: '2026-06-12T10:00:00.000Z' })
+  CRIADO_EM: Date;
 
   @ApiPropertyOptional({ type: () => [SalaryAdvanceInstallmentDataDto] })
   PARCELAS?: SalaryAdvanceInstallmentDataDto[];
