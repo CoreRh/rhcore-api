@@ -30,17 +30,17 @@ export class BudgetDataDto {
   @ApiProperty({ enum: BudgetCategoryEnum })
   CATEGORIA: BudgetCategoryEnum;
 
+  @ApiProperty({ example: 50000.0 })
+  VALOR_ORCADO: number;
+
+  @ApiPropertyOptional({ example: 'Orçamento de TI para o semestre' })
+  OBSERVACAO: string | null;
+
   @ApiProperty({
     enum: BaseEntityStatusEnum,
     example: BaseEntityStatusEnum.ATIVO,
   })
   STATUS: BaseEntityStatusEnum;
-
-  @ApiPropertyOptional({ example: 'Orçamneto de TI para o semestre' })
-  OBSERVACAO: string | null;
-
-  @ApiProperty({ example: 50000.0 })
-  VALOR_ORCADO: number;
 
   @ApiProperty({ example: 'admin' })
   CRIADO_POR: string;
