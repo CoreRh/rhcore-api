@@ -1,9 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDateString,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   IsUUID,
   Max,
@@ -15,6 +17,12 @@ export class CreateSalaryAdvanceDto {
   @ApiProperty({ example: 'a3bb189e-8bf9-3888-9912-ace4e6543002' })
   @IsUUID('4', { message: 'O ID do funcionário deve ser um UUID válido' })
   @IsNotEmpty({ message: 'O ID do funcionário é obrigatório' })
+  FUNCIONARIO_ID: string;
+
+  @ApiProperty({ example: 1000.0 })
+  @IsNumber({}, { message: 'O valor deve ser um número' })
+  @IsPositive({ message: 'O valor deve ser positivo' })
+  @IsNotEmpty({ message: 'O valor é obrigatório' })
   VALOR: number;
 
   @ApiProperty({ example: '2026-06-10' })
@@ -23,7 +31,7 @@ export class CreateSalaryAdvanceDto {
     { message: 'A data de solicitação deve ser uma data válida' },
   )
   @IsNotEmpty({ message: 'A data de solicitação é obrigatória' })
-  DATA_SOLICITAÇÃO: string;
+  DATA_SOLICITACAO: string;
 
   @ApiProperty({ example: 3 })
   @IsInt({ message: 'O número de parcelas deve ser um número inteiro' })
@@ -32,7 +40,7 @@ export class CreateSalaryAdvanceDto {
   @IsNotEmpty({ message: 'O número de parcelas é obrigatório' })
   NUMERO_PARCELAS: number;
 
-  @ApiProperty({ example: 'Adiantamento para emergência médica' })
+  @ApiPropertyOptional({ example: 'Adiantamento para emergência médica' })
   @IsString({ message: 'A observação deve ser do tipo texto' })
   @IsOptional()
   @MaxLength(500, { message: 'A observação deve ser no máximo 500 caracteres' })

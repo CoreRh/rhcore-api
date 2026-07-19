@@ -32,21 +32,25 @@ export class BudgetDataDto {
 
   @ApiProperty({
     enum: BaseEntityStatusEnum,
-    example: BaseEntityStatusEnum.PENDENTE,
+    example: BaseEntityStatusEnum.ATIVO,
   })
   STATUS: BaseEntityStatusEnum;
 
   @ApiPropertyOptional({ example: 'Orçamneto de TI para o semestre' })
   OBSERVACAO: string | null;
+
+  @ApiProperty({ example: 50000.0 })
+  VALOR_ORCADO: number;
+
+  @ApiProperty({ example: 'admin' })
+  CRIADO_POR: string;
+
+  @ApiProperty({ example: '2026-06-12T10:00:00.000Z' })
+  CRIADO_EM: Date;
 }
 
 export class BudgetResponseDto extends BaseSuccessResponseDto {
   @ApiProperty({ type: BudgetDataDto })
-  data: BudgetDataDto;
-}
-
-export class BudgetListReponseDto extends BaseSuccessResponseDto {
-  @ApiProperty({ type: [BudgetDataDto] })
   data: BudgetDataDto;
 }
 

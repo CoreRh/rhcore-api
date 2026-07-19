@@ -27,7 +27,7 @@ export class ExpenseDataDto {
   ID: string;
 
   @ApiProperty({ type: () => ExpenseEmployeeDto })
-  FUNCIONARIO: ExpenseCategoryEnum;
+  FUNCIONARIO: ExpenseEmployeeDto;
 
   @ApiProperty({ enum: ExpenseCategoryEnum })
   CATEGORIA: ExpenseCategoryEnum;
