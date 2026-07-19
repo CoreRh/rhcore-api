@@ -19,7 +19,10 @@ export class ExpenseApproverDto {
   ID: string;
 
   @ApiProperty({ example: 'maria.gestora' })
-  USERNAME: string;
+  NOME_USUARIO: string;
+
+  @ApiProperty({ example: 'maria@empresa.com.br' })
+  EMAIL: string;
 }
 
 export class ExpenseDataDto {

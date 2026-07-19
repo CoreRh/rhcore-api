@@ -22,8 +22,8 @@ export class CreateBudgetDto {
 
   @ApiProperty({ example: 2026 })
   @IsInt({ message: 'O ano de referência deve ser um número inteiro' })
-  @Min(2000, { message: 'O ano de referência deve ser maior que 2000' })
-  @Max(2100, { message: 'O ano de referência deve ser menor que 2100' })
+  @Min(2000, { message: 'O ano de referência deve ser 2000 ou posterior' })
+  @Max(2100, { message: 'O ano de referência deve ser 2100 ou anterior' })
   @IsNotEmpty({ message: 'O ano de referência é obrigatório' })
   ANO_REFERENCIA: number;
 
