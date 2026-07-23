@@ -33,6 +33,11 @@ export class ChatController {
   })
   @ApiResponse({ status: 400, type: BadRequestResponseDto })
   @ApiResponse({ status: 401, type: UnauthorizedResponseDto })
+  @ApiResponse({
+    status: 503,
+    description:
+      'Assistente indisponível (falha ao consultar o provedor de IA).',
+  })
   async perguntar(@Body() dto: ChatRequestDto): Promise<ChatResponseDto> {
     const resposta = await this.chatService.perguntar(dto.MENSAGEM);
     return {
