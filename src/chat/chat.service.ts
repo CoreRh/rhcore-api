@@ -26,8 +26,9 @@ export class ChatService {
   }
 
   async perguntar(mensagem: string): Promise<string> {
+    const client = this.getClient();
     try {
-      const response = await this.getClient().messages.create({
+      const response = await client.messages.create({
         model: CHAT_MODEL,
         max_tokens: CHAT_MAX_TOKENS,
         system: RHCORE_SYSTEM_PROMPT,
