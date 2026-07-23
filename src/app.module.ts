@@ -16,6 +16,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { PayrollModule } from './payroll/payroll.module';
 import { BenefitsModule } from './benefits/benefits.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -112,6 +113,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     PayrollModule,
     BenefitsModule,
     DashboardModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
