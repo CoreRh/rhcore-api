@@ -56,6 +56,7 @@ jobs:
             'MAIL_USER=ci@ci.com' \
             'MAIL_PASS=ci-fake-pass' \
             'MAIL_FROM=RHCore <ci@ci.com>' \
+            'AWS_REGION=us-east-1' \
             > .env
 
       - name: Enable uuid-ossp extension
